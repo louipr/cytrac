@@ -52,12 +52,7 @@ The system excludes requirements traceability management and focuses exclusively
 - IEEE Std 830-1998: IEEE Recommended Practice for Software Requirements Specifications
 - IEEE Std 1016-2009: IEEE Standard for Information Technology—Systems Design—Software Design Descriptions
 - Project Architecture Decision Records (ADRs)
-- TypeScript Language Specification v5.2+ (microsoft.github.io/TypeScript/)
-- ts-morph Documentation v27.0+ (ts-morph.com) - TypeScript Compiler API wrapper for static analysis
-- ESLint Configuration Standards v9.0+ (eslint.org/docs/latest/) - JavaScript/TypeScript static analysis engine  
-- Python Jedi Documentation v0.19+ (jedi.readthedocs.io) - Python static analysis and autocompletion library
-- Python Language Reference v3.8+ (docs.python.org/3/reference/) - Python language specification
-- Node.js Documentation v18.18.0+ (nodejs.org/en/docs/) - JavaScript runtime environment
+- ISO/IEC 25010:2011: Software engineering — Software product Quality Requirements and Evaluation (SQuaRE)
 
 ### 1.6 Overview
 This SRS is organized into four major sections following IEEE 830 standards:
@@ -71,24 +66,18 @@ This SRS is organized into four major sections following IEEE 830 standards:
 ### 2.1 Product Perspective
 Cytrac operates as a standalone code analysis platform with the following system context:
 
-#### 2.1.1 System Interfaces
-- **File System Interface**: Direct access to source code repositories for analysis
-- **CLI Interface**: Command-line interaction for automated workflows and CI/CD integration
-- **Web Interface**: Browser-based GUI for interactive analysis and visualization
-- **REST API**: RESTful endpoints for third-party tool integration (IDEs, CI/CD pipelines)
-- **External Tool Integration**: Plugin architecture for IDE extensions and development tool chains
+#### 2.1.1 System Context
+- **File System Integration**: Direct access to source code repositories for comprehensive analysis
+- **Multi-Interface Architecture**: Command-line, web-based, and API access for different user workflows
+- **Third-Party Integration**: Plugin architecture supporting IDE extensions and CI/CD pipeline integration
+- **Cross-Platform Operation**: Consistent functionality across Windows, macOS, and Linux environments
 
-#### 2.1.2 User Interfaces
-- **Command Line Interface**: Terminal-based interaction with full analysis capabilities
-- **Web-based GUI**: Modern single-page application with interactive visualizations
-- **API Interface**: Programmatic access for tool integration and automation
-
-#### 2.1.3 Hardware Interfaces
+#### 2.1.2 Hardware Interfaces
 - **Storage**: Local and network file system access for source code analysis
 - **Processing**: Multi-core CPU utilization for parallel analysis processing
 - **Memory**: Configurable memory allocation based on project size
 
-#### 2.1.4 Software Interfaces
+#### 2.1.3 Software Interfaces
 - **Node.js Runtime**: JavaScript execution environment (LTS version 18.18.0+ per ESLint compatibility requirements)
 - **TypeScript Compiler**: Language analysis and type checking (4.9+ for modern AST features used by ts-morph)
 - **ts-morph Library**: TypeScript Compiler API wrapper (27.0+) for programmatic AST navigation and manipulation
@@ -189,16 +178,13 @@ Cytrac provides comprehensive code analysis through six core functional areas:
 - **Cross-Platform Support**: Must operate consistently across Windows 10+, macOS 11+, and Ubuntu 20.04+ environments with Node.js runtime available
 
 #### 2.5.2 Regulatory and Compliance Constraints
-- **Security Requirements**: No transmission of source code to external services without explicit user consent
-- **Privacy Protection**: Local analysis capabilities to protect proprietary and sensitive code
-- **Enterprise Compliance**: Support for enterprise security requirements, audit trails, and data governance policies
+- **Data Privacy**: Local analysis capabilities to protect proprietary and sensitive code without external transmission
 - **Open Source Licensing**: Compliance with chosen open source license terms and dependency licenses
 - **Data Protection**: Adherence to applicable data protection regulations (GDPR, CCPA where relevant)
 
 #### 2.5.3 Hardware and Performance Constraints
 - **Minimum System Requirements**: 8GB RAM (4GB may severely limit analysis scope), multi-core CPU recommended for parallel processing, 2GB available storage for dependencies and analysis caches
-- **Analysis Performance**: Performance scales with project complexity, AST depth, and language feature usage - static analysis is computationally intensive by nature (see NFR-101 for realistic performance targets based on industry benchmarks)
-- **Memory Usage**: Memory requirements scale approximately O(n log n) with project size due to AST storage and symbol table requirements - ts-morph and ESLint maintain full ASTs in memory during analysis
+- **Memory Architecture**: Memory requirements scale approximately O(n log n) with project size due to AST storage and symbol table requirements maintained by ts-morph and ESLint
 - **Network Dependencies**: Core analysis operates offline, network required only for dependency installation and optional updates
 - **Browser Compatibility**: Modern web browser support (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+) with JavaScript ES2020+ features required for React 18+ compatibility
 
@@ -525,20 +511,20 @@ Cytrac provides comprehensive code analysis through six core functional areas:
 ### 3.3 External Interface Requirements
 
 #### 3.3.1 User Interfaces
-- **Web Interface**: Modern responsive web application supporting desktop and tablet devices
-- **Command Line Interface**: Cross-platform terminal application with comprehensive command set
-- **API Interface**: RESTful web services with OpenAPI documentation and client SDKs
+- **Command Line Interface**: Cross-platform terminal application with comprehensive command set and progress indicators
+- **Web Interface**: Modern responsive web application supporting desktop and tablet devices with interactive visualizations
+- **API Interface**: RESTful web services with OpenAPI documentation and client SDKs for programmatic access
 
 #### 3.3.2 Hardware Interfaces
-- **File System**: Direct access to local and network file systems for source code analysis
-- **Network**: HTTP/HTTPS communication for web interface and API access
-- **Storage**: Local storage for analysis caches, configuration, and temporary files
+- **File System**: Direct access to local and network file systems for source code analysis with cross-platform path support
+- **Network**: HTTP/HTTPS communication for web interface and API access with offline analysis capabilities
+- **Storage**: Local storage for analysis caches, configuration, and temporary files with configurable retention policies
 
 #### 3.3.3 Software Interfaces
-- **Development Tools**: Integration with IDEs, editors, and development environments
-- **Version Control**: Integration with Git, SVN, and other version control systems
-- **CI/CD Systems**: Plugin and webhook support for automated pipeline integration
-- **External APIs**: Integration capabilities with project management and quality tools
+- **Development Tools**: Integration with IDEs, editors, and development environments through plugins and extensions
+- **Version Control**: Integration with Git, SVN, and other version control systems for change tracking and diff analysis  
+- **CI/CD Systems**: Plugin and webhook support for automated pipeline integration with quality gates
+- **External APIs**: Integration capabilities with project management and quality tools through REST APIs
 
 ### 3.4 Software System Attributes
 
@@ -557,12 +543,9 @@ Cytrac provides comprehensive code analysis through six core functional areas:
 - **Health Monitoring**: Basic health monitoring integration points for operational deployment scenarios
 
 #### 3.4.3 Security
-- **Data Protection**: Basic encryption for stored analysis data using standard algorithms
-- **Access Control**: Simple authentication mechanisms for web interface when needed
-- **Authentication**: Basic authentication support (username/password, API keys)
-- **Operation Logging**: Basic logging of security-relevant operations for troubleshooting
+- **Data Protection**: Local-first analysis approach protecting proprietary source code by design
+- **Network Security**: HTTPS encryption for web communications when deployed as service
 - **Vulnerability Management**: Standard security practices and timely updates of dependencies
-- **Network Security**: HTTPS encryption for web communications
 
 #### 3.4.4 Maintainability
 - **Code Quality**: Target 70%+ automated test coverage for core analysis components
@@ -627,23 +610,6 @@ While Cytrac primarily operates on file-based analysis without traditional datab
 - **Inclusive Design**: Respectful and professional terminology throughout the application
 - **Basic Accessibility**: Support for common accessibility needs without complex compliance requirements
 - **Data Privacy**: Local-first approach respecting user data privacy by design
-
-### 3.5 Logical Database Requirements
-While Cytrac primarily operates on file-based analysis without traditional database requirements, the following data management specifications apply:
-
-#### 3.5.1 Analysis Data Management
-- **Data Persistence**: Optional persistence of analysis results in structured JSON format
-- **Data Relationships**: Hierarchical data organization reflecting code structure and relationships
-- **Data Integrity**: Checksums and validation mechanisms to ensure analysis data accuracy
-- **Data Retention**: Configurable retention policies for analysis history and cached results
-- **Data Access Patterns**: Optimized data structures for fast retrieval and visualization rendering
-
-#### 3.5.2 Configuration Data Management
-- **Configuration Storage**: Hierarchical configuration management (system, project, user levels)
-- **Version Control**: Configuration change tracking and rollback capabilities
-- **Import/Export**: Standardized configuration formats for sharing and backup
-- **Validation**: Schema validation for configuration files to prevent invalid settings
-- **Migration**: Automatic configuration migration between software versions
 
 ## 4. Supporting Information
 
