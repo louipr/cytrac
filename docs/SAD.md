@@ -23,7 +23,7 @@ This document covers the complete architectural design for Cytrac's capabilities
 - **Interactive visualization platform** with local-first web interface optimized for single-user operation
 - **Command-line and API interfaces** supporting personal workflow automation and integration
 - **Security-ready modular architecture** supporting privacy-by-design with optional authentication middleware
-- **Local-first deployment** with optional cloud deployment capability for collaboration scenarios
+- **Local-first deployment** with hybrid cloud architecture supporting cost-effective collaboration and scalability
 
 ### 1.3 Definitions and Acronyms
 - **AST**: Abstract Syntax Tree - Hierarchical representation of source code structure
@@ -89,6 +89,14 @@ The architecture prioritizes solopreneur development workflows with the followin
 - **Network Requirements**: Offline-capable analysis, network only for package installation and updates
 - **Security Model**: Local-first with privacy-by-design, security-ready for future middleware integration
 
+#### 2.2.3 Hybrid Cloud Deployment Constraints
+- **Frontend Hosting**: AWS S3 + CloudFront with sub-100ms global response times
+- **Primary Backend**: Oracle Cloud Always-Free ARM VM (4 cores, 24GB RAM, permanent free tier)
+- **Multi-Cloud Strategy**: Cost-optimized platform selection per service (Railway, Google Cloud Run, Vercel Functions)
+- **Domain Architecture**: Custom domain (cyrustek.com) with strategic subdomain routing
+- **SSL Requirements**: Free certificate management via AWS Certificate Manager and Let's Encrypt
+- **Cost Target**: <$5/month total infrastructure costs across all applications and APIs
+
 ### 2.3 Architectural Drivers
 Key requirements driving architectural decisions:
 
@@ -101,6 +109,10 @@ Key requirements driving architectural decisions:
 | Security-ready design | Standard Express middleware patterns for future authentication |
 | Developer workflow integration | CLI (Commander.js), IDE plugins, CI/CD automation hooks |
 | Future extensibility | Library ecosystem extensibility, standard configuration patterns |
+| **Cost optimization** | **Hybrid cloud deployment with AWS S3 frontend, Oracle ARM backend** |
+| **Professional branding** | **Custom domain strategy with app.cyrustek.com, api.[app].cyrustek.com** |
+| **Multi-application scaling** | **Shared frontend infrastructure, distributed backend platforms** |
+| **Global performance** | **CloudFront CDN for sub-100ms response times worldwide** |
 
 ## 3. Architectural Views
 
@@ -114,60 +126,73 @@ The Context Viewpoint defines system boundaries, external entities, and stakehol
 
 ```mermaid
 graph TB
-    subgraph "External Users"
+    subgraph "Development Environment"
         DEV1[Primary Developer<br/>Solopreneur]
         DEV2[Collaborating Developer<br/>Optional]
-    end
-    
-    subgraph "External Systems"
         FS[File System<br/>Source Code]
         VCS[Version Control<br/>Git Repositories]
         IDE[IDE Systems<br/>VS Code]
         CICD[CI/CD Pipeline<br/>GitHub Actions]
     end
     
-    subgraph "CYTRAC SYSTEM"
-        subgraph "User Interfaces"
-            CLI[Command Line Interface]
-            GUI[Web GUI Interface]
-            API[REST API]
-        end
-        
-        subgraph "Analysis & Visualization"
-            LANG[Language Analyzers<br/>ts-morph, ESLint, Jedi]
-            VIZ[Visualization & Export<br/>D3.js, Report Generation]
-        end
-        
-        EXT[Extension Points<br/>Future Integration]
+    subgraph "AWS Cloud Infrastructure"
+        S3[S3 Bucket<br/>app.cyrustek.com]
+        CF[CloudFront CDN<br/>Global Distribution]
+        ACM[Certificate Manager<br/>SSL/TLS]
     end
     
-    %% User interactions
-    DEV1 -.-> CLI
-    DEV1 -.-> GUI
+    subgraph "React Frontend (AWS Hosted)"
+        GUI[Web GUI Interface<br/>SPA Application]
+        VIZ[Visualization Engine<br/>D3.js, Charts]
+        UI[Analysis Dashboard<br/>Interactive Reports]
+    end
+    
+    subgraph "Oracle Cloud Infrastructure"
+        ARM[ARM VM<br/>4 cores, 24GB RAM]
+        API[REST API Server<br/>api.cytrac.cyrustek.com]
+        LANG[Language Analyzers<br/>ts-morph, ESLint, Jedi]
+        STORAGE[Analysis Storage<br/>Results & Cache]
+    end
+    
+    subgraph "Multi-Cloud Extensions"
+        CLI[CLI Tool<br/>Local/Remote]
+        EXT[Future APIs<br/>Railway, GCR, Vercel]
+    end
+    
+    %% Development workflow
+    DEV1 --> IDE
+    DEV1 --> CLI
     DEV2 -.-> GUI
-    
-    %% External system interactions
-    CLI --> FS
-    GUI --> FS
-    API --> FS
-    VCS --> FS
     IDE -.-> API
-    CICD -.-> CLI
+    CICD --> ARM
+    VCS --> ARM
     
-    %% Internal connections
-    CLI --> LANG
-    GUI --> LANG
+    %% Cloud infrastructure
+    CF --> GUI
+    S3 --> CF
+    ACM --> CF
+    GUI --> API
+    
+    %% Processing flow
+    FS --> CLI
+    CLI --> API
     API --> LANG
-    LANG --> VIZ
-    EXT -.-> API
+    LANG --> STORAGE
+    GUI --> VIZ
+    VIZ --> UI
     
-    classDef primary fill:#e1f5fe
-    classDef system fill:#f3e5f5
-    classDef external fill:#fff3e0
+    %% Extensions
+    EXT -.-> GUI
     
-    class DEV1 primary
-    class CLI,GUI,API,LANG,VIZ system
-    class FS,VCS,IDE,CICD external
+    classDef aws fill:#FF9900,color:#fff
+    classDef oracle fill:#F80000,color:#fff
+    classDef frontend fill:#61DAFB,color:#000
+    classDef dev fill:#e1f5fe
+    
+    class S3,CF,ACM aws
+    class ARM,API,LANG,STORAGE oracle
+    class GUI,VIZ,UI frontend
+    class DEV1,DEV2,FS,VCS,IDE,CICD dev
 ```
 
 #### 3.1.2 External Entities
@@ -182,6 +207,12 @@ graph TB
 - **CI/CD Integration**: GitHub Actions for automated analysis in personal project workflows
 - **IDE Environments**: Visual Studio Code integration for real-time analysis feedback
 - **Package Managers**: npm, pip for dependency analysis and installation management
+
+**Cloud Infrastructure**
+- **AWS S3 + CloudFront**: Global CDN hosting for React SPA frontend (app.cyrustek.com)
+- **Oracle Cloud ARM VM**: Always-free compute hosting for primary analysis API (api.cytrac.cyrustek.com)
+- **Multi-Cloud Platforms**: Cost-optimized hosting for additional APIs (Railway, Google Cloud Run, Vercel Functions)
+- **DNS Management**: Domain routing and SSL certificate management (cyrustek.com ecosystem)
 
 ### 3.2 Composition Viewpoint
 
@@ -539,11 +570,35 @@ The Interface Viewpoint specifies external interfaces, APIs, and integration pat
 - **REST API**: Express.js application with standard middleware patterns
 
 **API Endpoint Structure**
+
+*Core Analysis Endpoints (MVP)*
 ```
-POST /api/v1/analysis       # Initiate analysis
-GET  /api/v1/analysis/:id   # Retrieve results
-GET  /api/v1/health         # System health check
+POST /api/v1/analysis           # Initiate analysis
+GET  /api/v1/analysis/:id       # Retrieve results
+GET  /api/v1/analysis/:id/status # Check analysis progress
+GET  /api/v1/health             # System health check
 ```
+
+*Architectural Extension Points (Future)*
+```
+# Result Access Patterns
+GET  /api/v1/analysis/:id/symbols      # Symbol analysis results
+GET  /api/v1/analysis/:id/dependencies # Dependency graph data
+GET  /api/v1/analysis/:id/metrics      # Code quality metrics
+GET  /api/v1/analysis/:id/export       # Export in multiple formats
+
+# Configuration & Management
+GET  /api/v1/languages          # Supported language capabilities
+GET  /api/v1/version            # API version and features
+POST /api/v1/projects           # Project registration (collaboration)
+```
+
+**API Architecture Principles:**
+- **RESTful Design**: Standard HTTP methods and resource patterns
+- **Asynchronous Processing**: POST creates analysis job, GET retrieves results
+- **Progressive Enhancement**: Core endpoints support MVP, extensions enable advanced features
+- **Stateless Operation**: Each request contains complete context for analysis
+- **Version Management**: `/v1/` prefix enables backward-compatible API evolution
 
 #### 3.7.2 Integration Interfaces
 
@@ -566,7 +621,7 @@ GET  /api/v1/health         # System health check
 
 ### 3.8 Structure Viewpoint
 
-The Structure Viewpoint defines physical organization and deployment architecture supporting local-first development and optional collaboration scenarios.
+The Structure Viewpoint defines physical organization and deployment architecture supporting local-first development with hybrid cloud deployment capabilities for cost-effective collaboration and scaling.
 
 #### 3.8.1 Physical Architecture
 
@@ -618,18 +673,65 @@ Developer Machine
 └── Project-Specific Config (./cytrac-config.json)
 ```
 
-**Optional Cloud Deployment**
-```
-Container (Docker)
-├── Node.js Application
-├── Web Frontend (Static Files)  
-├── REST API Server
-└── File System Mount (Analysis Target)
+**Hybrid Cloud Deployment Architecture**
 
-Accessible via:
-├── HTTPS Endpoint (Web UI)
-├── API Endpoints (REST)
-└── CLI (Remote Mode)
+**Frontend Layer (AWS S3 + CloudFront)**
+```
+AWS S3 Static Hosting
+├── Shared Frontend Bucket (app.cyrustek.com)
+│   ├── /cytrac → Cytrac React SPA
+│   ├── /devtools → DevTools React SPA (future)
+│   └── /shared → Common assets and libraries
+├── Global CloudFront CDN Distribution
+├── AWS Certificate Manager SSL (*.cyrustek.com)
+└── Route 53 DNS Management
+
+Benefits: Ultra-low cost (~$0.01/month), global CDN performance
+```
+
+**Backend Layer (Distributed Multi-Cloud)**
+```
+Oracle Cloud Always-Free ARM VM
+├── api.cytrac.cyrustek.com → Cytrac Analysis API
+│   ├── Express.js REST Server
+│   ├── ts-morph + ESLint + Jedi Analysis Engine
+│   ├── 4 ARM cores, 24GB RAM (free forever)
+│   └── Let's Encrypt SSL Certificate
+
+Future API Distribution:
+├── api.devtools.cyrustek.com → Railway/Google Cloud Run
+├── api.analytics.cyrustek.com → Vercel Functions/AWS Lambda
+└── api.[app].cyrustek.com → Cost-optimized hosting per requirements
+
+Benefits: Zero backend costs, optimal platform selection per service
+```
+
+**Complete Architecture Flow**
+```
+Users → app.cyrustek.com (AWS CloudFront CDN)
+       ├── Cached globally for <100ms response times
+       ├── /cytrac SPA → api.cytrac.cyrustek.com (Oracle ARM VM)
+       ├── /devtools SPA → api.devtools.cyrustek.com (Platform TBD)
+       └── /[app] SPA → api.[app].cyrustek.com (Platform TBD)
+
+Cost Structure:
+├── Frontend: $0.01-0.25/month (AWS S3 + CloudFront)
+├── Primary API: $0/month (Oracle always-free)
+├── Additional APIs: $0-5/month each (free tiers + optimal platforms)
+└── Total: $0.01-25/month depending on scale and usage
+```
+
+**Domain and SSL Strategy**
+```
+Domain Architecture:
+├── cyrustek.com → Main company/personal site
+├── app.cyrustek.com → Unified SPA hosting (all applications)
+└── api.[app].cyrustek.com → Distributed API endpoints
+
+SSL Certificates:
+├── *.cyrustek.com → AWS Certificate Manager (free)
+├── *.cytrac.cyrustek.com → Let's Encrypt wildcard (free)
+└── Platform SSL → Automatic for Railway, Vercel, Cloud Run
 ```
 
 ## 4. Design Rationale
@@ -647,14 +749,16 @@ This section documents the key architectural decisions, their rationale, and the
 - Maintains clear separation of concerns supporting high test coverage requirements
 - Enables future extensibility when personal projects grow into collaboration scenarios
 
-#### 4.1.2 Local-First with Optional Simple Cloud Deployment  
-**Decision**: Primary deployment as local desktop tool with optional cloud deployment for collaboration
+#### 4.1.2 Hybrid Cloud Architecture Strategy
+**Decision**: Local-first development with hybrid cloud deployment using AWS S3 for frontend and distributed multi-cloud backend hosting
 **Rationale**:
-- Aligns with solopreneur user class and single-user operation requirements
-- Supports privacy-by-design requirement with local file system analysis
-- Enables offline analysis capability essential for personal development workflows
-- Reduces operational complexity and infrastructure costs for individual developers
-- Maintains optional cloud deployment for collaboration scenarios without requiring it
+- **Cost Optimization**: AWS S3 + CloudFront provides enterprise CDN at ~$0.01/month for frontend hosting
+- **Zero-Cost Backend**: Oracle Cloud Always-Free ARM VM (4 cores, 24GB RAM) provides production-grade compute at $0/month
+- **Platform Flexibility**: Distributed backend enables optimal platform selection per service requirements (Railway, Google Cloud Run, Vercel)  
+- **Scalability**: Unified frontend supports multiple applications while maintaining independent backend scaling
+- **Professional Architecture**: Custom domain strategy (app.cyrustek.com, api.[app].cyrustek.com) provides branded, enterprise-grade user experience
+- **Developer Experience**: ARM64 development on M3 Pro Mac aligns perfectly with Oracle ARM production deployment
+- **Risk Mitigation**: Multi-cloud approach reduces vendor lock-in while maintaining cost efficiency
 
 #### 4.1.3 Security-Ready Architecture without Current Implementation
 **Decision**: Design API middleware integration points without current authentication implementation
@@ -739,21 +843,34 @@ This section documents the key architectural decisions, their rationale, and the
 ## 5. Conclusion
 
 ### 5.1 Architecture Summary
-This architecture provides a solid foundation for Cytrac as a professional personal development tool, implementing all system requirements with security-ready design for optional future collaboration capabilities. The modular, local-first architecture optimizes current solopreneur workflows while maintaining extensibility for evolving personal project needs.
+This hybrid cloud architecture provides a professional, cost-effective foundation for Cytrac and future applications, implementing all system requirements with enterprise-grade deployment capabilities at near-zero operational costs. The local-first development approach combined with strategic cloud deployment optimizes both development productivity and production scalability.
 
 ### 5.2 Implementation Priorities
-1. **Library Integration Foundation**: Foundation implementing multi-language analysis capabilities
-2. **CLI Interface**: Primary interface for solopreneur developer workflows
-3. **Web Interface**: Interactive visualization and comprehensive reporting
-4. **API Layer**: Integration capabilities and workflow automation support
-5. **Security Integration Points**: Middleware architecture ready for future collaboration features
+1. **AWS Frontend Infrastructure**: S3 + CloudFront setup for unified SPA hosting (app.cyrustek.com)
+2. **Oracle ARM VM Backend**: Primary API hosting with ts-morph + ESLint + Jedi analysis engine
+3. **Library Integration Foundation**: Multi-language analysis capabilities with composition-based architecture
+4. **CLI Interface**: Local development tool maintaining privacy-by-design principles
+5. **Hybrid Deployment Pipeline**: Automated deployment for both AWS frontend and Oracle backend components
 
 ### 5.3 Future Evolution Path
-The architecture supports natural evolution paths for personal project growth:
-- **Collaboration Support**: Optional authentication and session management for pair programming
-- **Advanced Analysis**: Additional language library integrations (Java, C#, Go, Rust)
-- **Enhanced Visualization**: Advanced graph algorithms and reporting capabilities
-- **Integration Expansion**: Additional IDE plugins and CI/CD platform support
-- **Cloud Deployment**: Simple cloud hosting for team collaboration when needed
+The hybrid cloud architecture supports seamless scaling and evolution:
 
-This architecture achieves the balance between current personal development optimization and future extensibility, positioning Cytrac as an effective tool that grows with developer needs while maintaining the privacy-by-design and local-first principles essential for personal development workflows.
+**Near-term Expansion (0-12 months):**
+- **Additional SPAs**: Deploy devtools, analytics applications to shared app.cyrustek.com frontend
+- **API Distribution**: Distribute new APIs across optimal platforms (Railway, Google Cloud Run, Vercel Functions)
+- **Domain Strategy**: Implement api.[app].cyrustek.com subdomain pattern for service isolation
+- **Monitoring Integration**: Unified frontend monitoring with distributed backend observability
+
+**Medium-term Growth (1-2 years):**
+- **Team Collaboration**: Optional authentication middleware leveraging Oracle VM + AWS infrastructure
+- **Advanced Visualization**: Enhanced D3.js components with shared asset optimization via CloudFront
+- **Integration Ecosystem**: IDE plugins, CI/CD integrations maintaining hybrid deployment model
+- **Multi-Language Expansion**: Additional analysis engines (Java, C#, Go, Rust) distributed across cost-optimized platforms
+
+**Long-term Architecture (2+ years):**
+- **Microservices Evolution**: Service mesh architecture across multi-cloud deployment maintaining cost efficiency
+- **Geographic Distribution**: CloudFront + Oracle Cloud regions for global performance optimization
+- **Enterprise Features**: Advanced security, compliance, and governance while preserving cost-effective hybrid model
+- **Platform Strategy**: CyrusTek application ecosystem leveraging proven hybrid cloud architecture patterns
+
+This architecture achieves enterprise-grade capabilities at hobbyist costs, positioning Cytrac as both a professional development tool and a scalable foundation for future application development.
