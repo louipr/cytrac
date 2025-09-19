@@ -153,14 +153,37 @@ Cytrac provides comprehensive code analysis through six core functional areas:
 - **Storage Requirements**: 1GB+ free space for Node.js dependencies and analysis caches (suitable for personal project analysis)
 - **Network Requirements**: Internet access for npm package installation, fully offline capable for analysis (ideal for personal development)
 
-#### 2.4.2 Optional Cloud Environment
-- **Containerization**: Docker support for consistent deployment when cloud access is needed
-- **Simple Hosting**: Basic cloud deployment for remote access scenarios
-- **Minimal Infrastructure**: Single-instance deployment without complex load balancing or monitoring
+#### 2.4.2 Hybrid Cloud Deployment Environment
+- **Frontend Hosting**: AWS S3 + CloudFront for global CDN distribution with <100ms response times
+- **Primary Backend**: Oracle Cloud Always-Free ARM VM (4 cores, 24GB RAM) for cost-effective compute
+- **Multi-Cloud Strategy**: Cost-optimized platform selection per service (Railway, Google Cloud Run, Vercel Functions)
+- **Domain Architecture**: Custom domain (cyrustek.com) with strategic subdomain routing for professional branding
+- **SSL Management**: Free certificate management via AWS Certificate Manager and Let's Encrypt
+- **Cost Target**: <$5/month total infrastructure costs across all applications and APIs
+
+#### 2.4.3 Multi-Application Platform Environment  
+- **Shared Frontend**: Unified SPA hosting supporting multiple applications under app.cyrustek.com
+- **Distributed APIs**: api.[app].cyrustek.com subdomain pattern for service isolation
+- **Platform Flexibility**: Optimal platform selection per application requirements
+- **Scalability**: Independent backend scaling while maintaining shared frontend infrastructure
 
 ### 2.5 Design and Implementation Constraints
 
-#### 2.5.1 Technology Constraints
+#### 2.5.2 Cost Optimization Constraints
+- **Infrastructure Budget**: <$5/month total cost across all applications and APIs
+- **Free Tier Maximization**: Leverage Oracle Always-Free ARM VM, AWS free tier, platform-specific free allowances
+- **Multi-Cloud Cost Efficiency**: Select optimal hosting platform per service based on cost-performance ratio
+- **Professional Branding Within Budget**: Custom domain and SSL certificates using free options (AWS Certificate Manager, Let's Encrypt)
+- **Scalable Cost Model**: Architecture supporting growth without proportional infrastructure cost increases
+
+#### 2.5.3 Multi-Application Platform Constraints
+- **Shared Infrastructure**: Frontend must support multiple applications under unified domain structure
+- **Domain Strategy**: app.cyrustek.com for SPAs, api.[app].cyrustek.com for distributed APIs
+- **Platform Independence**: Each API service can be deployed on optimal platform without affecting others
+- **Brand Consistency**: Professional user experience across all applications in the ecosystem
+- **Future Application Support**: Architecture must accommodate additional applications without major restructuring
+
+#### 2.5.4 Technology Constraints
 - **Backend Platform**: Node.js/TypeScript for core analysis engine and API services (constraint: requires Node.js LTS 18.18.0+ per ESLint requirements, TypeScript 4.9+ for modern AST features)
 - **Frontend Framework**: React-based single-page application with modern JavaScript standards (constraint: React 18+ with ES2020+ browser support for optimal performance)
 - **Analysis Libraries**: ts-morph (27.0+) for TypeScript AST analysis, ESLint (9.0+) for JavaScript/TypeScript linting, Python Jedi (0.19+) for Python analysis support (constraint: library API compatibility and performance scaling characteristics)
@@ -360,6 +383,30 @@ Cytrac provides comprehensive code analysis through six core functional areas:
   - Provide basic quality checks with configurable thresholds
   - Complete analysis within reasonable time for personal project automation
 
+**FR-304: Hybrid Cloud Deployment Architecture**
+- **Description**: The system SHALL support hybrid cloud deployment with AWS frontend and Oracle backend hosting
+- **Inputs**: React SPA build artifacts, Node.js API server, configuration files
+- **Processing**: S3 static hosting, CloudFront CDN distribution, ARM VM API deployment
+- **Outputs**: Globally accessible web application with <100ms response times
+- **Acceptance Criteria**:
+  - Frontend deployed to AWS S3 with CloudFront CDN integration
+  - Backend API hosted on Oracle Cloud Always-Free ARM VM
+  - Custom domain (app.cyrustek.com) with SSL certificate management
+  - Cost target <$5/month total infrastructure across all services
+  - Support future multi-application deployment on shared infrastructure
+
+**FR-305: Multi-Application Platform Support**
+- **Description**: The system SHALL support deployment as part of a multi-application platform ecosystem
+- **Inputs**: Application-specific SPA builds, distributed API services, routing configuration
+- **Processing**: Unified frontend hosting, subdomain-based API routing, cost-optimized platform selection
+- **Outputs**: Professional branded application ecosystem under cyrustek.com domain
+- **Acceptance Criteria**:
+  - Shared frontend infrastructure supporting multiple SPAs under app.cyrustek.com
+  - API deployment following api.[app].cyrustek.com subdomain pattern
+  - Platform-agnostic API deployment (Oracle, Railway, Google Cloud Run, Vercel)
+  - Consistent branding and user experience across all applications
+  - Independent scaling capabilities per application service
+
 #### 3.1.4 Data Management Requirements (FR-400 Series)
 
 **FR-401: Analysis Data Export**
@@ -457,9 +504,38 @@ Cytrac provides comprehensive code analysis through six core functional areas:
   - Basic request/response logging structure that can be extended for security auditing
   - No current authentication implementation required - focus on extensible architecture
 
-#### 3.2.5 Usability Requirements (NFR-500 Series)
+#### 3.2.5 Cost Optimization and Deployment Requirements (NFR-500 Series)
 
-**NFR-501: User Experience**
+**NFR-501: Infrastructure Cost Efficiency**
+- **Requirement**: The system SHALL operate within strict cost constraints suitable for individual developer budgets
+- **Acceptance Criteria**:
+  - Total infrastructure costs <$5/month for all applications and APIs
+  - Maximize use of free tiers: Oracle Always-Free ARM VM, AWS free tier, platform-specific allowances
+  - Cost-conscious platform selection per service based on requirements and pricing models
+  - Architecture supporting growth without proportional infrastructure cost increases
+  - Monthly cost monitoring and optimization recommendations
+
+**NFR-502: Hybrid Cloud Performance**
+- **Requirement**: The system SHALL deliver enterprise-grade performance through cost-effective hybrid cloud deployment
+- **Acceptance Criteria**:
+  - Frontend response times <100ms globally via CloudFront CDN
+  - API response times <5 seconds for standard analysis requests
+  - Zero-downtime deployment capabilities across AWS and Oracle Cloud infrastructure
+  - 99.9% uptime target leveraging cloud provider reliability
+  - Automatic scaling within cost constraints
+
+**NFR-503: Multi-Application Platform Efficiency**
+- **Requirement**: The system SHALL support efficient deployment as part of a multi-application ecosystem
+- **Acceptance Criteria**:
+  - Shared frontend infrastructure reducing per-application deployment costs
+  - Independent API scaling without affecting other applications
+  - Consistent branding and user experience across all applications
+  - Platform-agnostic API deployment supporting optimal cost-performance selection
+  - Professional domain architecture (app.cyrustek.com, api.[app].cyrustek.com)
+
+#### 3.2.6 Usability Requirements (NFR-600 Series)
+
+**NFR-601: User Experience**
 - **Requirement**: The system SHALL provide intuitive user experiences focused on developer productivity
 - **Acceptance Criteria**:
   - New users complete basic analysis within 20 minutes of first use with minimal documentation
@@ -468,7 +544,7 @@ Cytrac provides comprehensive code analysis through six core functional areas:
   - Basic accessibility support for common assistive technologies
   - Keyboard shortcuts for power users and efficient CLI operation
 
-**NFR-502: Documentation and Support**
+**NFR-602: Documentation and Support**
 - **Requirement**: The system SHALL provide essential documentation appropriate for a solopreneur operation
 - **Acceptance Criteria**:
   - Clear API documentation with practical examples
