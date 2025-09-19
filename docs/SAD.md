@@ -1,10 +1,10 @@
 ---
 # Cytrac Software Architecture Document (SAD)
 
-**Version:** 2.0  
-**Date:** January 14, 2025  
+**Version:** 2.1  
+**Date:** September 18, 2025  
 **Authors:** CyrusTek Senior Software Architect  
-**Reviewed By:** Requirements Engineering Team  
+**Reviewed By:** Architecture Review Board  
 **Status:** Professional Architecture Specification  
 **Compliance:** IEEE Std 1016-2009 (Software Design Descriptions)  
 **Source Document:** Cytrac Software Requirements Specification (SRS) v3.0  
@@ -17,15 +17,15 @@
 ## 1. Introduction
 
 ### 1.1 Purpose
-This Software Architecture Document (SAD) describes the comprehensive architectural design of Cytrac, a code analysis and visualization platform optimized for solopreneur developers and small collaborative workflows. This document derives its architectural specifications directly from the authoritative Software Requirements Specification (SRS) v3.0, providing detailed design views and implementation guidelines aligned with streamlined personal development tool requirements.
+This Software Architecture Document (SAD) describes the comprehensive architectural design of Cytrac, a code analysis and visualization platform optimized for solopreneur developers and small collaborative workflows. This document provides architectural views, design rationale, and implementation guidelines that address the system's functional and non-functional requirements while maintaining focus on architectural concerns.
 
 ### 1.2 Scope  
-This document covers the complete architectural design for Cytrac's streamlined capabilities as defined in SRS v3.0:
-- **Multi-language static analysis** (TypeScript, JavaScript, Node.js, Python) with 100k LOC maximum project support
+This document covers the complete architectural design for Cytrac's capabilities:
+- **Multi-language static analysis** (TypeScript, JavaScript, Node.js, Python) supporting projects up to 100k lines of code
 - **Interactive visualization platform** with local-first web interface optimized for single-user operation
-- **Command-line and API interfaces** supporting personal workflow automation and future integration
-- **Security-ready modular architecture** supporting current privacy-by-design and future authentication middleware
-- **Local-first deployment** with optional simple cloud deployment capability for collaboration scenarios
+- **Command-line and API interfaces** supporting personal workflow automation and integration
+- **Security-ready modular architecture** supporting privacy-by-design with optional authentication middleware
+- **Local-first deployment** with optional cloud deployment capability for collaboration scenarios
 
 ### 1.3 Definitions and Acronyms
 - **AST**: Abstract Syntax Tree - Hierarchical representation of source code structure
@@ -44,7 +44,7 @@ This document covers the complete architectural design for Cytrac's streamlined 
 - React Architecture Patterns v18+
 
 ### 1.5 Overview
-This document follows IEEE Std 1016-2009 architectural viewpoint structure, providing comprehensive design perspectives derived from SRS v3.0:
+This document follows IEEE Std 1016-2009 architectural viewpoint structure, providing comprehensive design perspectives:
 
 1. **Context Viewpoint** - System boundaries, stakeholder relationships, and external interfaces
 2. **Composition Viewpoint** - High-level system decomposition and component organization  
@@ -55,60 +55,60 @@ This document follows IEEE Std 1016-2009 architectural viewpoint structure, prov
 7. **Interface Viewpoint** - External interfaces, APIs, and integration specifications
 8. **Structure Viewpoint** - Physical organization, deployment architecture, and development structure
 
-Each viewpoint directly implements requirements from the authoritative SRS v3.0, ensuring architectural alignment with streamlined solopreneur development workflows.
+Each viewpoint addresses specific architectural concerns while maintaining traceability to the system requirements.
 
 ## 2. System Context and Goals
 
 ### 2.1 Architectural Goals
-Based on streamlined SRS v3.0 requirements, the architecture prioritizes solopreneur development workflows:
+The architecture prioritizes solopreneur development workflows with the following design objectives:
 
-#### 2.1.1 Primary Goals (from SRS NFR requirements)
-- **Single-User Optimization**: Simplified architecture optimized for personal development workflows (NFR-202)
-- **Local-First Operation**: Privacy-by-design with offline analysis capabilities (NFR-401, SRS 2.4.1)
-- **Performance Efficiency**: 30-second analysis for <25k LOC, 5-minute analysis for personal projects up to 100k LOC (NFR-101)
-- **Security-Ready Architecture**: Modular design enabling future authentication middleware without current complexity (NFR-401, NFR-402)
-- **Extensible Foundation**: Plugin architecture supporting future language analyzers and CyrusTek product evolution (SRS 2.5.1)
+#### 2.1.1 Primary Architectural Objectives
+- **Single-User Optimization**: Simplified architecture optimized for personal development workflows
+- **Local-First Operation**: Privacy-by-design with offline analysis capabilities
+- **Performance Efficiency**: Sub-minute analysis for typical personal projects, 5-minute maximum for large projects
+- **Security-Ready Architecture**: Modular design enabling future authentication middleware without current complexity
+- **Extensible Foundation**: Plugin architecture supporting future language analyzers and collaboration features
 
-#### 2.1.2 Quality Attributes (from SRS Section 3.4)
-- **Reliability**: Graceful error handling with local recovery mechanisms (NFR-302, Section 3.4.1)
-- **Portability**: Cross-platform operation (Windows 10+, macOS 11+, Ubuntu 20.04+) (Section 3.4.5)
-- **Maintainability**: 70%+ test coverage with modular, well-documented architecture (Section 3.4.4)
-- **Usability**: 20-minute first-use success for solopreneur developers with minimal documentation (NFR-501)
-- **Privacy**: Local-first analysis protecting proprietary source code by design (NFR-401)
+#### 2.1.2 Quality Attribute Requirements
+- **Reliability**: Graceful error handling with local recovery mechanisms
+- **Portability**: Cross-platform operation (Windows 10+, macOS 11+, Ubuntu 20.04+)
+- **Maintainability**: High test coverage with modular, well-documented architecture
+- **Usability**: Minimal learning curve for experienced developers with comprehensive tooling
+- **Privacy**: Local-first analysis protecting proprietary source code by design
 
 ### 2.2 Architectural Constraints
 
-#### 2.2.1 Technology Constraints (from SRS 2.5.1)
+#### 2.2.1 Technology Constraints
 - **Backend Platform**: Node.js 18.18.0+ LTS with TypeScript 4.9+
 - **Frontend Framework**: React 18+ with ES2020+ browser support
 - **Analysis Libraries**: ts-morph 27.0+, ESLint 9.0+, Python Jedi 0.19+
 - **API Architecture**: RESTful with OpenAPI 3.0+ specification
 - **Data Storage**: JSON-based with optional file persistence
 
-#### 2.2.2 Operational Constraints (from SRS 2.5.4)
-- **Memory Limits**: <2GB for projects up to 100k LOC (NFR-102, updated from SRS v3.0)
-- **Performance Targets**: 5-minute analysis for large personal projects up to 100k LOC (NFR-101)
+#### 2.2.2 Operational Constraints
+- **Memory Limits**: <2GB for projects up to 100k lines of code
+- **Performance Targets**: 5-minute maximum analysis time for large personal projects
 - **Network Requirements**: Offline-capable analysis, network only for package installation and updates
-- **Security Model**: Local-first with privacy-by-design, security-ready for future middleware integration (NFR-401)
+- **Security Model**: Local-first with privacy-by-design, security-ready for future middleware integration
 
 ### 2.3 Architectural Drivers
-Key requirements driving architectural decisions (prioritized by SRS v3.0):
+Key requirements driving architectural decisions:
 
-| Driver | Requirement Source | Architectural Impact |
-|--------|-------------------|---------------------|
-| Single-user optimization | NFR-202 (SRS primary focus) | Simplified concurrency, local storage, no authentication layer |
-| Local-first privacy | NFR-401, SRS 2.4.1 | File system analysis, no cloud dependencies, offline operation |
-| Performance targets | NFR-101, NFR-102 | Efficient AST processing, streaming analysis, memory management |
-| Multi-language support | FR-101-106 | Pluggable analyzer architecture with unified interfaces |
-| Security-ready design | NFR-401, NFR-402 | Middleware-ready API design for future authentication |
-| Developer workflow integration | FR-302, FR-303 | CLI-first design, IDE plugins, CI/CD automation hooks |
-| Future extensibility | SRS 2.5.1, CyrusTek vision | Modular plugin architecture, configuration management |
+| Driver | Architectural Impact |
+|--------|---------------------|
+| Single-user optimization | Simplified concurrency, local storage, no authentication layer |
+| Local-first privacy | File system analysis, no cloud dependencies, offline operation |
+| Performance targets | Efficient AST processing, streaming analysis, memory management |
+| Multi-language support | Pluggable analyzer architecture with unified interfaces |
+| Security-ready design | Middleware-ready API design for future authentication |
+| Developer workflow integration | CLI-first design, IDE plugins, CI/CD automation hooks |
+| Future extensibility | Modular plugin architecture, configuration management |
 
 ## 3. Architectural Views
 
 ### 3.1 Context Viewpoint
 
-The Context Viewpoint defines system boundaries, external entities, and stakeholder relationships as specified in SRS v3.0.
+The Context Viewpoint defines system boundaries, external entities, and stakeholder relationships.
 
 #### 3.1.1 System Context Diagram
 
@@ -172,8 +172,8 @@ graph TB
 
 #### 3.1.2 External Entities
 
-**Primary Stakeholders (from SRS 2.3)**
-- **Solopreneur Developer**: Primary user performing daily analysis on personal projects up to 100k LOC
+**Primary Stakeholders**
+- **Solopreneur Developer**: Primary user performing daily analysis on personal projects up to 100k lines of code
 - **Collaborating Developer**: Secondary user for occasional code review and pair programming sessions
 
 **External Systems**
@@ -185,7 +185,7 @@ graph TB
 
 ### 3.2 Composition Viewpoint
 
-The Composition Viewpoint describes the system's high-level decomposition into major architectural components, aligned with SRS v3.0 functional requirements.
+The Composition Viewpoint describes the system's high-level decomposition into major architectural components.
 
 #### 3.2.1 High-Level System Decomposition
 
@@ -243,16 +243,16 @@ graph TB
 
 #### 3.2.2 Component Responsibilities
 
-| Component | Primary Responsibilities | SRS Requirements |
-|-----------|-------------------------|------------------|
-| **User Interface Layer** | CLI, GUI, API request handling | FR-201, FR-202, FR-301 |
-| **Analysis Core Engine** | AST processing, symbol analysis, dead code detection | FR-101-106 |
-| **Visualization & Export** | Interactive graphs, report generation | FR-203, FR-401 |
-| **Language Core Adapters** | Language-specific AST parsing and analysis | FR-101, FR-104 technical constraints |
+| Component | Primary Responsibilities |
+|-----------|-------------------------|
+| **User Interface Layer** | CLI, GUI, API request handling and user interaction management |
+| **Analysis Core Engine** | AST processing, symbol analysis, dead code detection |
+| **Visualization & Export** | Interactive graphs, report generation, data transformation |
+| **Language Core Adapters** | Language-specific AST parsing and analysis integration |
 
 ### 3.3 Logical Viewpoint
 
-The Logical Viewpoint presents the functional architecture and key domain abstractions that implement SRS v3.0 analysis requirements.
+The Logical Viewpoint presents the functional architecture and key domain abstractions that implement the system's analysis capabilities.
 
 #### 3.3.1 Functional Architecture
 
@@ -333,14 +333,14 @@ interface AnalysisResult {
 
 interface AnalysisEngine {
   analyze(projectPath: string, options: AnalysisOptions): Promise<AnalysisResult>;
-  getProgress(): AnalysisProgress;   // Real-time progress for NFR-101
+  getProgress(): AnalysisProgress;   // Real-time progress reporting
   cancel(): void;                    // Cancellation support
-  validateMemoryLimits(): boolean;   // NFR-102 memory constraint checking
+  validateMemoryLimits(): boolean;   // Memory constraint checking
 }
 
 // Performance-optimized processing configuration
 interface AnalysisOptions {
-  memoryLimit: number;              // Default: 2GB (NFR-102)
+  memoryLimit: number;              // Default: 2GB
   batchSize: number;                // Default: 1000 files per batch
   enableCache: boolean;             // Default: true for local development
   progressCallback?: (progress: AnalysisProgress) => void;
@@ -381,7 +381,7 @@ interface ProjectConfiguration {
 
 ### 3.4 Dependency Viewpoint
 
-The Dependency Viewpoint illustrates component relationships and data flow patterns supporting SRS v3.0 analysis workflows.
+The Dependency Viewpoint illustrates component relationships and data flow patterns supporting analysis workflows.
 
 #### 3.4.1 Component Dependency Graph
 
@@ -431,11 +431,11 @@ flowchart TD
     
     LANG_ANALYZER[Language Analyzer<br/>AST Generation]
     
-    SYM_EXTRACTOR[Symbol Extractor<br/>Symbol Analysis - FR-101]
+    SYM_EXTRACTOR[Symbol Extractor<br/>Symbol Analysis & Classification]
     
-    REF_LINKER[Reference Linker<br/>Reference Analysis - FR-105]
+    REF_LINKER[Reference Linker<br/>Reference Analysis & Mapping]
     
-    QUAL_ANALYZER[Quality Analyzer<br/>Dead Code Detection - FR-106]
+    QUAL_ANALYZER[Quality Analyzer<br/>Dead Code Detection & Metrics]
     
     RESULTS_COMPILER[Results Compiler<br/>Analysis Result Assembly]
     
@@ -469,14 +469,14 @@ flowchart TD
 
 ### 3.5 Information Viewpoint
 
-The Information Viewpoint defines data models, storage architecture, and information management strategies aligned with SRS v3.0 local-first requirements.
+The Information Viewpoint defines data models, storage architecture, and information management strategies aligned with local-first operational requirements.
 
 #### 3.5.1 Data Model
 
 **Core Analysis Data Structures**
 
 ```typescript
-// Project Metadata (SRS 4.6.3)
+// Project Metadata
 interface ProjectMetadata {
   path: string;
   name: string;
@@ -488,7 +488,7 @@ interface ProjectMetadata {
   executionTime: number;
 }
 
-// Symbol Information (FR-101)
+// Symbol Information
 interface Symbol {
   id: string;
   name: string;
@@ -499,7 +499,7 @@ interface Symbol {
   metadata: SymbolMetadata;
 }
 
-// Dependency Relationships (FR-102)
+// Dependency Relationships
 interface DependencyEdge {
   from: string; // source module
   to: string;   // target module
@@ -508,7 +508,7 @@ interface DependencyEdge {
   isCircular: boolean;
 }
 
-// Call Graph Data (FR-103)
+// Call Graph Data
 interface CallEdge {
   caller: string;
   callee: string;
@@ -517,7 +517,7 @@ interface CallEdge {
   confidence: number;
 }
 
-// Dead Code Findings (FR-106)
+// Dead Code Findings
 interface DeadCodeItem {
   symbol: string;
   type: DeadCodeType; // unused_variable, unused_function, unreachable_code
@@ -530,7 +530,7 @@ interface DeadCodeItem {
 
 #### 3.5.2 Storage Architecture
 
-**Local-First Storage Strategy (SRS 2.6.2 - local development focus)**
+**Local-First Storage Strategy**
 
 ```
 Project Root/
@@ -546,7 +546,7 @@ Project Root/
 │       └── dead-code-report.csv
 ```
 
-**Configuration Hierarchy (FR-402)**
+**Configuration Hierarchy**
 ```
 System Level:    ~/.cytrac/config.json
 Project Level:   ./cytrac-config.json  
@@ -555,7 +555,7 @@ Runtime Level:   Environment variables + CLI flags
 
 ### 3.6 Patterns Viewpoint
 
-The Patterns Viewpoint describes architectural patterns and design strategies that support SRS v3.0 requirements for modularity, extensibility, and security-ready design.
+The Patterns Viewpoint describes architectural patterns and design strategies that support system requirements for modularity, extensibility, and security-ready design.
 
 #### 3.6.1 Architectural Patterns
 
@@ -563,7 +563,7 @@ The Patterns Viewpoint describes architectural patterns and design strategies th
 - **Purpose**: Clear separation of concerns with defined interfaces
 - **Implementation**: Presentation → Application → Domain → Infrastructure
 - **Benefits**: Maintainability, testability, extensibility
-- **SRS Alignment**: Supports modular architecture requirement (SRS 2.5.1)
+- **SRS Alignment**: Supports modular architecture requirement
 
 **2. Plugin Architecture Pattern**
 ```typescript
@@ -585,7 +585,7 @@ class PythonAnalyzer implements LanguageAnalyzer { /* Jedi based */ }
 class JavaAnalyzer implements LanguageAnalyzer { /* Future addition */ }
 ```
 
-**3. Security-Ready Middleware Pattern (NFR-401, NFR-402)**
+**3. Security-Ready Middleware Pattern**
 ```typescript
 interface RequestContext {
   sessionId: string;       // Current analysis session
@@ -612,7 +612,7 @@ class LocalOnlyMiddleware implements ApiMiddleware {
 class SecurityMiddleware implements ApiMiddleware {
   async handle(req, res, next) {
     // Future: Authentication and authorization logic
-    // Supports SRS v3.0 security-ready architecture
+    // Supports security-ready architecture design
   }
 }
 ```
@@ -625,7 +625,7 @@ interface AnalysisObserver {
   onError(error: Error): void;
 }
 
-// Supports NFR-101 progress indicators requirement
+// Supports progress reporting requirements
 ```
 
 #### 3.6.2 Design Patterns
@@ -638,71 +638,82 @@ interface AnalysisObserver {
 **Strategy Pattern for Export Formats**  
 - **Purpose**: Support multiple export formats (JSON, CSV, PDF, HTML)
 - **Benefits**: Easy addition of new export formats
-- **SRS Alignment**: FR-401 multiple export format requirement
+- **Architecture Alignment**: Multiple export format capability requirement
 
 **Command Pattern for CLI Operations**
 - **Purpose**: Encapsulate analysis operations as objects
 - **Benefits**: Undo/redo capability, operation queuing
-- **SRS Alignment**: FR-201 comprehensive CLI requirement
+- **Architecture Alignment**: Comprehensive CLI interface requirement
 
 ### 3.7 Interface Viewpoint
 
-The Interface Viewpoint specifies external interfaces, APIs, and integration patterns that implement SRS v3.0 user interface and integration requirements.
+The Interface Viewpoint specifies external interfaces, APIs, and integration patterns that implement user interface and integration requirements.
 
 #### 3.7.1 User Interfaces
 
-**Command Line Interface (FR-201)**
-```bash
-# Primary Commands (SRS 4.6.3 examples)
-cytrac analyze <project-path> [options]
-cytrac export <analysis-id> --format <json|csv|pdf|html>
-cytrac config set <key> <value>
-cytrac version
-
-# Options
---format <json|text|report>    # Output format
---output <file>                # Output file path  
---languages <ts,js,py>         # Language filter
---memory-limit <2GB>           # Memory constraint (NFR-102)
---config <config-file>         # Configuration file
---verbose                      # Progress indicators (NFR-101)
---exclude <pattern>            # File exclusion patterns
---confidence-threshold <0.8>   # Dead code detection threshold
+**Command Line Interface Architecture**
+```typescript
+interface CLIInterface {
+  // Core Commands
+  analyze(projectPath: string, options: AnalysisOptions): Promise<AnalysisResult>;
+  export(analysisId: string, format: ExportFormat, outputPath?: string): Promise<void>;
+  configure(key: string, value: any): Promise<void>;
+  version(): string;
+  
+  // Command Options
+  supportedFormats: ['json', 'text', 'report'];
+  supportedLanguages: ['typescript', 'javascript', 'python'];
+  configurationOptions: ConfigurationSchema;
+}
 ```
 
-**Web Interface (FR-202, FR-203)**
+**Web Interface Architecture**
+```typescript
+interface WebInterface {
+  // Page Components
+  dashboard: DashboardComponent;
+  analysisInitiation: AnalysisComponent;
+  resultsVisualization: ResultsComponent;
+  exportManagement: ExportComponent;
+  
+  // API Integration
+  apiClient: WebAPIClient;
+  
+  // Route Structure
+  routes: {
+    '/': 'dashboard',
+    '/analyze': 'analysis-initiation',
+    '/results/:id': 'results-visualization',
+    '/export/:id/:format': 'export-management'
+  };
+}
 ```
-GET  /                         # Dashboard home
-GET  /analyze                  # Analysis initiation page  
-POST /api/analyze              # Start analysis
-GET  /api/analyze/:id          # Get analysis results
-GET  /results/:id              # Results visualization page
-GET  /export/:id/:format       # Export analysis results
-```
 
-**REST API (FR-301)**
-```
-POST /api/v1/analysis
-  Body: { projectPath, options }
-  Response: { analysisId, status }
-
-GET /api/v1/analysis/:id
-  Response: AnalysisResult | { status, progress }
-
-GET /api/v1/analysis/:id/export/:format
-  Response: Exported data in requested format
-
-GET /api/v1/health  
-  Response: { status, version, uptime }
-
-POST /api/v1/config
-  Body: ConfigurationUpdate
-  Response: { success, config }
+**REST API Architecture**
+```typescript
+interface RESTAPIInterface {
+  // Analysis Operations
+  createAnalysis(request: AnalysisRequest): Promise<AnalysisResponse>;
+  getAnalysisStatus(id: string): Promise<AnalysisStatus>;
+  getAnalysisResults(id: string): Promise<AnalysisResult>;
+  
+  // Export Operations  
+  exportAnalysis(id: string, format: ExportFormat): Promise<ExportData>;
+  
+  // System Operations
+  getHealthStatus(): Promise<HealthStatus>;
+  updateConfiguration(config: ConfigurationUpdate): Promise<ConfigurationResponse>;
+  
+  // API Specification
+  version: 'v1';
+  baseUrl: '/api/v1';
+  authentication: OptionalMiddleware;
+}
 ```
 
 #### 3.7.2 Integration Interfaces
 
-**IDE Integration (FR-302)**
+**IDE Integration Architecture**
 ```typescript
 interface IDEIntegration {
   // Language Server Protocol compatibility
@@ -713,7 +724,7 @@ interface IDEIntegration {
 }
 ```
 
-**CI/CD Integration (FR-303)**
+**CI/CD Integration Architecture**
 ```yaml
 # GitHub Actions Example
 - name: Run Cytrac Analysis
@@ -727,7 +738,7 @@ interface IDEIntegration {
 
 ### 3.8 Structure Viewpoint
 
-The Structure Viewpoint defines physical organization and deployment architecture supporting SRS v3.0 local-first development and optional collaboration scenarios.
+The Structure Viewpoint defines physical organization and deployment architecture supporting local-first development and optional collaboration scenarios.
 
 #### 3.8.1 Physical Architecture
 
@@ -770,7 +781,7 @@ cytrac/
 
 #### 3.8.2 Deployment Architecture
 
-**Local Development Deployment (Primary - NFR-202)**
+**Local Development Deployment (Primary)**
 ```
 Developer Machine
 ├── Node.js Runtime (18.18.0+)
@@ -779,7 +790,7 @@ Developer Machine
 └── Project-Specific Config (./cytrac-config.json)
 ```
 
-**Optional Cloud Deployment (SRS 2.4.2)**
+**Optional Cloud Deployment**
 ```
 Container (Docker)
 ├── Node.js Application
@@ -800,33 +811,33 @@ Accessible via:
 #### 4.1.1 Monorepo with Modular Packages
 **Decision**: Use monorepo structure with separate packages for core, CLI, web, and API components
 **Rationale**: 
-- Supports SRS v3.0 modular architecture requirement (2.5.1) for maintainable personal development
+- Supports modular architecture requirements for maintainable personal development
 - Enables selective deployment patterns (CLI-only for automation, web interface for visualization)
 - Facilitates independent testing and development of analysis vs. visualization components
-- Maintains clear separation of concerns supporting 70%+ test coverage requirement (SRS 3.4.4)
+- Maintains clear separation of concerns supporting high test coverage requirements
 - Enables future extensibility when personal projects grow into collaboration scenarios
 
 #### 4.1.2 Local-First with Optional Simple Cloud Deployment  
 **Decision**: Primary deployment as local desktop tool with optional cloud deployment for collaboration
 **Rationale**:
-- Aligns with SRS v3.0 solopreneur user class and single-user operation (NFR-202)
-- Supports privacy-by-design requirement with local file system analysis (NFR-401) 
-- Enables offline analysis capability essential for personal development workflows (SRS 2.4.1)
+- Aligns with solopreneur user class and single-user operation requirements
+- Supports privacy-by-design requirement with local file system analysis
+- Enables offline analysis capability essential for personal development workflows
 - Reduces operational complexity and infrastructure costs for individual developers
 - Maintains optional cloud deployment for collaboration scenarios without requiring it
 
 #### 4.1.3 Security-Ready Architecture without Current Implementation
 **Decision**: Design API middleware integration points without current authentication implementation
 **Rationale**:
-- Supports SRS v3.0 security-ready architecture requirement (NFR-401, NFR-402)
-- Avoids unnecessary complexity for current solopreneur use case (SRS 2.3.1)
+- Supports security-ready architecture requirements
+- Avoids unnecessary complexity for current solopreneur use case
 - Enables incremental security feature addition when collaboration needs arise
 - Maintains architectural extensibility for optional future security features
 
 #### 4.1.4 Plugin-Based Language Support
 **Decision**: Abstract language analyzers behind unified interface with extension points
 **Rationale**:
-- Supports SRS v3.0 extensibility requirement (Section 3.4.6)
+- Supports extensibility requirements for future language additions
 - Enables future language additions without core architecture changes
 - Facilitates independent testing and maintenance of language-specific analysis logic
 - Aligns with open/closed principle supporting personal project evolution
@@ -834,34 +845,34 @@ Accessible via:
 ### 4.2 Technology Selection Rationale
 
 #### 4.2.1 Core Technology Stack
-| Technology | Version Requirement | Rationale | SRS Alignment |
-|------------|-------------------|-----------|---------------|
-| **Node.js** | 18.18.0+ LTS | ESLint 9.0+ compatibility requirement, mature ecosystem, 208k+ ts-morph users | SRS 2.5.1 technology constraints |
-| **TypeScript** | 4.9+ (5.2+ preferred) | Type safety, ts-morph AST compatibility, modern language features | SRS 2.5.1 AST analysis requirements |
-| **ts-morph** | 27.0+ | Mature TypeScript AST manipulation, 208k+ weekly downloads, comprehensive API | SRS technical research validation |
-| **ESLint** | 9.0+ | Static analysis engine, extensible rule system, Node.js 18.18.0+ requirement | SRS 2.5.1 JavaScript analysis |
-| **Python Jedi** | 0.19+ | Python static analysis, Python 3.8+ support, mature autocomplete engine | SRS Python analysis capability |
-| **React** | 18+ | Modern frontend framework, component architecture, ES2020+ browser support | SRS 2.5.1 interactive visualization |
-| **Express.js** | 4.18+ | Lightweight REST framework, middleware pattern, security middleware ready | SRS security-ready architecture |
-| **D3.js** | 7.0+ | Interactive data visualization, SVG manipulation, graph algorithms | SRS FR-203 visualization requirements |
+| Technology | Version Requirement | Rationale | Architecture Alignment |
+|------------|-------------------|-----------|----------------------|
+| **Node.js** | 18.18.0+ LTS | ESLint 9.0+ compatibility requirement, mature ecosystem, 208k+ ts-morph users | Technology constraints |
+| **TypeScript** | 4.9+ (5.2+ preferred) | Type safety, ts-morph AST compatibility, modern language features | AST analysis requirements |
+| **ts-morph** | 27.0+ | Mature TypeScript AST manipulation, 208k+ weekly downloads, comprehensive API | Technical research validation |
+| **ESLint** | 9.0+ | Static analysis engine, extensible rule system, Node.js 18.18.0+ requirement | JavaScript analysis capability |
+| **Python Jedi** | 0.19+ | Python static analysis, Python 3.8+ support, mature autocomplete engine | Python analysis capability |
+| **React** | 18+ | Modern frontend framework, component architecture, ES2020+ browser support | Interactive visualization requirements |
+| **Express.js** | 4.18+ | Lightweight REST framework, middleware pattern, security middleware ready | Security-ready architecture |
+| **D3.js** | 7.0+ | Interactive data visualization, SVG manipulation, graph algorithms | Visualization requirements |
 
 #### 4.2.2 Design Pattern Selection
-- **Layered Architecture**: Clean separation supporting 70%+ test coverage (SRS 3.4.4)
-- **Plugin Pattern**: Future language extensibility (SRS 3.4.6)  
-- **Observer Pattern**: Progress reporting for long analyses (NFR-101)
-- **Strategy Pattern**: Multiple export formats (FR-401)
+- **Layered Architecture**: Clean separation supporting high test coverage requirements
+- **Plugin Pattern**: Future language extensibility support
+- **Observer Pattern**: Progress reporting for long analyses
+- **Strategy Pattern**: Multiple export formats capability
 
 ### 4.3 Performance Design Decisions
 
 #### 4.3.1 Memory Management Strategy
 **Decision**: Streaming AST processing with configurable memory limits and progressive analysis
 **Technical Implementation**:
-- **Memory Target**: <2GB total consumption for projects up to 100k LOC (NFR-102)
+- **Memory Target**: <2GB total consumption for projects up to 100k lines of code
 - **Streaming Processing**: Process files in 1000-file batches to maintain memory efficiency
 - **AST Caching**: LRU cache for 500 most recently analyzed files with automatic eviction
 - **Garbage Collection**: Explicit memory management with V8 heap monitoring
 **Rationale**:
-- Supports SRS v3.0 updated memory targets for personal project scale (100k LOC maximum)
+- Supports updated memory targets for personal project scale (100k LOC maximum)
 - Enables graceful degradation on resource-constrained development machines
 - Optimized for single-user desktop workflow patterns vs. concurrent server processing
 
@@ -872,9 +883,9 @@ Accessible via:
 - **Stage 2**: Symbol extraction and basic analysis (target: 30-60 seconds for 100k LOC)  
 - **Stage 3**: Reference analysis and quality checks (target: 2-5 minutes total for 100k LOC)
 - **Incremental Updates**: File-level change detection with selective re-analysis
-- **Progress Reporting**: Real-time progress indicators every 100ms during analysis (NFR-101)
+- **Progress Reporting**: Real-time progress indicators every 100ms during analysis
 **Rationale**:
-- Achieves SRS v3.0 performance targets: 30s for <25k LOC, 5min for large personal projects
+- Achieves performance targets: 30s for <25k LOC, 5min for large personal projects
 - Provides immediate feedback for developer workflow integration
 - Supports iterative development patterns common in personal projects
 
@@ -888,19 +899,19 @@ Accessible via:
 - **Performance Impact**: 90%+ cache hit rate for unchanged files, <1s cache retrieval
 **Rationale**:
 - Enables sub-second re-analysis for unchanged code sections during development cycles
-- Supports offline development workflow essential for personal development (SRS 2.4.1)
+- Supports offline development workflow essential for personal development
 - Balances cache effectiveness with disk space constraints on personal development machines
 
 ## 5. Conclusion
 
 ### 5.1 Architecture Summary
-This architecture provides a solid foundation for Cytrac as a professional personal development tool, implementing all requirements from SRS v3.0 with security-ready design for optional future collaboration capabilities. The modular, local-first architecture optimizes current solopreneur workflows while maintaining extensibility for evolving personal project needs.
+This architecture provides a solid foundation for Cytrac as a professional personal development tool, implementing all system requirements with security-ready design for optional future collaboration capabilities. The modular, local-first architecture optimizes current solopreneur workflows while maintaining extensibility for evolving personal project needs.
 
 ### 5.2 Implementation Priorities
-1. **Core Analysis Engine**: Foundation implementing FR-101-106 for multi-language analysis
-2. **CLI Interface**: Primary interface for solopreneur developer workflows (FR-201)
-3. **Web Interface**: Interactive visualization and comprehensive reporting (FR-202, FR-203)
-4. **API Layer**: Integration capabilities and workflow automation support (FR-301)
+1. **Core Analysis Engine**: Foundation implementing multi-language analysis capabilities
+2. **CLI Interface**: Primary interface for solopreneur developer workflows
+3. **Web Interface**: Interactive visualization and comprehensive reporting
+4. **API Layer**: Integration capabilities and workflow automation support
 5. **Security Integration Points**: Middleware architecture ready for future collaboration features
 
 ### 5.3 Future Evolution Path
