@@ -17,7 +17,7 @@
 ## 1. Introduction
 
 ### 1.1 Purpose
-This Software Architecture Document (SAD) describes the comprehensive architectural design of Cytrac, a code analysis and visualization platform optimized for solopreneur developers and small collaborative workflows. This document provides architectural views, design rationale, and implementation guidelines that address the system's functional and non-functional requirements while maintaining focus on architectural concerns.
+This Software Architecture Document (SAD) describes the comprehensive architectural design of Cytrac, a code analysis and visualization platform optimized for solopreneur developers and small collaborative workflows. This document provides architectural views, design rationale, and implementation guidelines while maintaining focus on architectural concerns.
 
 ### 1.2 Scope  
 This document covers the complete architectural design for Cytrac's capabilities:
@@ -67,7 +67,7 @@ The architecture prioritizes solopreneur development workflows with the followin
 - **Local-First Operation**: Privacy-by-design with offline analysis capabilities
 - **Performance Efficiency**: Sub-minute analysis for typical personal projects, 5-minute maximum for large projects
 - **Security-Ready Architecture**: Modular design enabling future authentication middleware without current complexity
-- **Extensible Foundation**: Plugin architecture supporting future language analyzers and collaboration features
+- **Extensible Foundation**: Composition-based architecture supporting future language library integrations and collaboration features
 
 #### 2.1.2 Quality Attribute Requirements
 - **Reliability**: Graceful error handling with local recovery mechanisms
@@ -87,7 +87,7 @@ The architecture prioritizes solopreneur development workflows with the followin
 
 #### 2.2.2 Operational Constraints
 - **Memory Limits**: <2GB for projects up to 100k lines of code
-- **Performance Targets**: 5-minute maximum analysis time for large personal projects
+- **Performance Targets**: Sub-minute analysis for typical projects, 5-minute maximum for large projects
 - **Network Requirements**: Offline-capable analysis, network only for package installation and updates
 - **Security Model**: Local-first with privacy-by-design, security-ready for future middleware integration
 
@@ -98,13 +98,15 @@ Key requirements driving architectural decisions:
 |--------|---------------------|
 | Single-user optimization | Simplified concurrency, local storage, no authentication layer |
 | Local-first privacy | File system analysis, no cloud dependencies, offline operation |
-| Performance targets | Efficient AST processing, streaming analysis, memory management |
-| Multi-language support | Pluggable analyzer architecture with unified interfaces |
-| Security-ready design | Middleware-ready API design for future authentication |
-| Developer workflow integration | CLI-first design, IDE plugins, CI/CD automation hooks |
-| Future extensibility | Modular plugin architecture, configuration management |
+| Performance targets | Delegates to library optimizations (ts-morph, ESLint, Jedi) |
+| Multi-language support | Direct library integration with minimal wrapper layers |
+| Security-ready design | Standard Express middleware patterns for future authentication |
+| Developer workflow integration | CLI (Commander.js), IDE plugins, CI/CD automation hooks |
+| Future extensibility | Library ecosystem extensibility, standard configuration patterns |
 
 ## 3. Architectural Views
+
+This section presents the system architecture through multiple complementary viewpoints, following IEEE 1016-2009 guidelines for comprehensive architectural documentation.
 
 ### 3.1 Context Viewpoint
 
@@ -133,7 +135,7 @@ graph TB
             API[REST API]
         end
         
-        subgraph "Analysis Engine Core"
+        subgraph "Analysis & Visualization"
             LANG[Language Analyzers<br/>ts-morph, ESLint, Jedi]
             VIZ[Visualization & Export<br/>D3.js, Report Generation]
         end
@@ -193,14 +195,13 @@ The Composition Viewpoint describes the system's high-level decomposition into m
 graph TB
     subgraph "CYTRAC SYSTEM"
         subgraph "User Interface Layer"
-            CLI[CLI Interface<br/>Command Processing]
+            CLI[CLI Interface<br/>Commander.js]
             GUI[Web GUI<br/>React SPA]
             API[REST API<br/>Express.js]
         end
         
-        subgraph "Analysis Core Engine"
-            PARSER[Parser Engine<br/>AST Generation]
-            ANALYZER[Analysis Engine<br/>Symbol & Reference]
+        subgraph "Analysis Coordination"
+            COORD[Analysis Coordinator<br/>Orchestration & Results]
         end
         
         subgraph "Visualization & Export"
@@ -208,47 +209,44 @@ graph TB
             EXPORT[Export Engine<br/>Multiple Formats]
         end
         
-        subgraph "Language Core Adapters"
-            TSMORPH[ts-morph<br/>TypeScript Analysis]
-            JEDI[Python Jedi<br/>Python Analysis]
-            FUTURE[Future Languages<br/>Extensible]
+        subgraph "Language Library Integrations"
+            TSMORPH[ts-morph Library<br/>TypeScript/JavaScript]
+            JEDI[Python Jedi Library<br/>Python Analysis]
+            ESLINT[ESLint Library<br/>Linting & Analysis]
         end
     end
     
     %% Interface connections
-    CLI --> PARSER
-    GUI --> PARSER
-    API --> PARSER
+    CLI --> COORD
+    GUI --> COORD
+    API --> COORD
     
     %% Core processing flow
-    PARSER --> ANALYZER
-    ANALYZER --> D3
-    ANALYZER --> EXPORT
-    
-    %% Language adapter connections
-    PARSER --> TSMORPH
-    PARSER --> JEDI
-    PARSER -.-> FUTURE
+    COORD --> TSMORPH
+    COORD --> JEDI
+    COORD --> ESLINT
+    COORD --> D3
+    COORD --> EXPORT
     
     classDef interface fill:#e3f2fd
-    classDef core fill:#f1f8e9
+    classDef coord fill:#f1f8e9
     classDef viz fill:#fce4ec
     classDef lang fill:#fff8e1
     
     class CLI,GUI,API interface
-    class PARSER,ANALYZER core
+    class COORD coord
     class D3,EXPORT viz
-    class TSMORPH,JEDI,FUTURE lang
+    class TSMORPH,JEDI,ESLINT lang
 ```
 
 #### 3.2.2 Component Responsibilities
 
 | Component | Primary Responsibilities |
 |-----------|-------------------------|
-| **User Interface Layer** | CLI, GUI, API request handling and user interaction management |
-| **Analysis Core Engine** | AST processing, symbol analysis, dead code detection |
-| **Visualization & Export** | Interactive graphs, report generation, data transformation |
-| **Language Core Adapters** | Language-specific AST parsing and analysis integration |
+| **User Interface Layer** | CLI (Commander.js), Web GUI (React), API (Express.js) request handling |
+| **Analysis Coordination** | Orchestrates library calls, aggregates results, manages configuration |
+| **Visualization & Export** | D3.js interactive graphs, report generation, multiple export formats |
+| **Library Integrations** | ts-morph (TypeScript/JavaScript), Jedi (Python), ESLint (linting) |
 
 ### 3.3 Logical Viewpoint
 
@@ -259,123 +257,77 @@ The Logical Viewpoint presents the functional architecture and key domain abstra
 ```mermaid
 graph TB
     subgraph "PRESENTATION LAYER"
-        CLI_H[CLI Handler<br/>Commands, Progress, Output]
-        WEB_F[Web Frontend<br/>React SPA - Dashboard, Graphs, Reports]
-        REST_A[REST API<br/>Express.js - Analysis Routes, Export Routes, Health Check]
+        CLI_H[CLI Handler<br/>Commander.js Commands]
+        WEB_F[Web Frontend<br/>React SPA + D3.js]
+        REST_A[REST API<br/>Express.js Routes]
     end
     
     subgraph "APPLICATION LAYER"
-        ANAL_M[Analysis Manager<br/>Job Queue, Progress, Results Cache]
-        VIZ_M[Visualization Manager<br/>Graph Builder, Chart Factory, Export Engine]
-        CONFIG_M[Configuration Manager<br/>Settings, Validation, Environment]
+        COORD[Analysis Coordinator<br/>Orchestrates Library Calls]
+        CONFIG[Configuration<br/>dotenv/config Libraries]
     end
     
-    subgraph "DOMAIN LAYER"
-        SYM_A[Symbol Analysis<br/>AST Walking, Type Inference, Classification]
-        REF_A[Reference Analysis<br/>Usage Mapping, Impact Graph, Confidence]
-        QUAL_A[Code Quality<br/>Dead Code, Circular Dependencies, Metrics]
-    end
-    
-    subgraph "INFRASTRUCTURE LAYER"
-        LANG_A[Language Adapters<br/>ts-morph, ESLint, Python Jedi]
-        FILE_S[File System<br/>Project Read, File Walking, Path Resolve]
-        DATA_A[Data Access<br/>JSON Storage, Cache Management, Export Format]
+    subgraph "LIBRARY INTEGRATION LAYER"
+        TSMORPH[ts-morph<br/>TypeScript AST Analysis]
+        JEDI[Python Jedi<br/>Python Analysis]
+        ESLINT[ESLint<br/>JavaScript/TypeScript Linting]
+        FS[Node.js fs<br/>File System Operations]
     end
     
     %% Presentation to Application connections
-    CLI_H --> ANAL_M
-    WEB_F --> VIZ_M
-    REST_A --> ANAL_M
-    REST_A --> VIZ_M
+    CLI_H --> COORD
+    WEB_F --> COORD
+    REST_A --> COORD
     
-    %% Application to Domain connections
-    ANAL_M --> SYM_A
-    ANAL_M --> REF_A
-    ANAL_M --> QUAL_A
-    VIZ_M --> SYM_A
-    VIZ_M --> REF_A
-    CONFIG_M --> ANAL_M
-    
-    %% Domain to Infrastructure connections
-    SYM_A --> LANG_A
-    REF_A --> LANG_A
-    QUAL_A --> LANG_A
-    SYM_A --> FILE_S
-    REF_A --> DATA_A
-    QUAL_A --> DATA_A
-    VIZ_M --> DATA_A
+    %% Application to Library connections
+    COORD --> TSMORPH
+    COORD --> JEDI
+    COORD --> ESLINT
+    COORD --> FS
+    CONFIG --> COORD
     
     classDef presentation fill:#e8f5e8
     classDef application fill:#fff3e0
-    classDef domain fill:#e3f2fd
-    classDef infrastructure fill:#fce4ec
+    classDef library fill:#fce4ec
     
     class CLI_H,WEB_F,REST_A presentation
-    class ANAL_M,VIZ_M,CONFIG_M application
-    class SYM_A,REF_A,QUAL_A domain
-    class LANG_A,FILE_S,DATA_A infrastructure
+    class COORD,CONFIG application
+    class TSMORPH,JEDI,ESLINT,FS library
 ```
 
 #### 3.3.2 Key Abstractions
 
 **Analysis Pipeline (Core Domain Model)**
+
 ```typescript
-interface AnalysisResult {
-  projectInfo: ProjectMetadata;
-  symbols: SymbolInventory;           // ~10k-50k symbols for 100k LOC
-  dependencies: DependencyGraph;      // Module-level dependency mapping
-  callGraph: CallHierarchy;          // Function-level call relationships  
-  references: ReferenceMap;          // Symbol usage analysis
-  deadCode: DeadCodeFindings;        // Unused code detection results
-  metrics: QualityMetrics;           // Code quality measurements
-  performance: AnalysisMetrics;      // Analysis execution metrics
-}
-
-interface AnalysisEngine {
+// High-level analysis coordination interface
+interface CytracAnalysisCoordinator {
   analyze(projectPath: string, options: AnalysisOptions): Promise<AnalysisResult>;
-  getProgress(): AnalysisProgress;   // Real-time progress reporting
-  cancel(): void;                    // Cancellation support
-  validateMemoryLimits(): boolean;   // Memory constraint checking
+  onProgress?: (progress: { stage: string; percentage: number }) => void;
 }
 
-// Performance-optimized processing configuration
+// Configuration options with library delegation
 interface AnalysisOptions {
-  memoryLimit: number;              // Default: 2GB
-  batchSize: number;                // Default: 1000 files per batch
-  enableCache: boolean;             // Default: true for local development
-  progressCallback?: (progress: AnalysisProgress) => void;
-  languageFilters?: LanguageType[]; // Selective analysis for performance
-  confidenceThreshold: number;     // Dead code detection threshold (0.0-1.0)
+  languages?: string[];
+  memoryLimit?: number;
+  outputPath?: string;
 }
 ```
 
 **Security-Ready Architecture (Future Extension Points)**
 ```typescript
+// Extension points for future authentication
 interface SecurityContext {
-  sessionId: string;                // Local session tracking
-  auditLog: AuditEntry[];          // Action logging for development workflow
-  config: SecurityConfiguration;    // Future: authentication, authorization settings
+  sessionId: string;
+  user?: Express.User;        // Standard Express patterns
+  permissions?: string[];
 }
 
+// Configuration management approach
 interface ConfigurationService {
   get<T>(key: string): T;
-  set(key: string, value: any): void;
-  
-  // Current: local development settings
-  project: ProjectConfiguration;
-  analysis: AnalysisConfiguration;
-  
-  // Security extension point (disabled by default)
-  security?: SecurityConfiguration; // Optional, for future collaboration features
-}
-
-// Local-first configuration management
-interface ProjectConfiguration {
-  includePatterns: string[];        // File inclusion patterns
-  excludePatterns: string[];        // Standard exclusions (.git, node_modules, .venv)
-  languageSettings: LanguageConfig; // Language-specific analysis settings
-  memoryLimit: number;              // Project-specific memory limits
-  cacheEnabled: boolean;            // Local caching preferences
+  loadFromEnvironment(): void;
+  loadFromFile(path: string): void;
 }
 ```
 
@@ -387,38 +339,33 @@ The Dependency Viewpoint illustrates component relationships and data flow patte
 
 ```mermaid
 graph TD
-    CLI[CLI App<br/>Command Interface]
-    WEB[Web App<br/>React Frontend]
+    CLI[CLI App<br/>Commander.js]
+    WEB[Web App<br/>React + D3.js]
     API[REST API<br/>Express Server]
     
-    MANAGER[Analysis Manager<br/>Orchestration & Cache]
+    COORD[Analysis Coordinator<br/>Library Orchestration]
     
-    CORE[Analysis Core Engine<br/>AST Processing & Analysis]
-    
-    TS_ANALYZER[TypeScript Analyzer<br/>ts-morph Integration]
-    PY_ANALYZER[Python Analyzer<br/>Jedi Integration]
-    FUTURE_ANALYZER[Future Language<br/>Analyzers]
+    TSMORPH[ts-morph Library<br/>TypeScript/JavaScript]
+    JEDI[Jedi Library<br/>Python Analysis]
+    ESLINT[ESLint Library<br/>Linting & Rules]
     
     %% Primary interface dependencies
-    CLI --> MANAGER
-    WEB --> MANAGER  
-    API --> MANAGER
+    CLI --> COORD
+    WEB --> COORD  
+    API --> COORD
     
-    %% Analysis processing dependencies
-    MANAGER --> CORE
-    CORE --> TS_ANALYZER
-    CORE --> PY_ANALYZER
-    CORE -.-> FUTURE_ANALYZER
+    %% Library integration dependencies
+    COORD --> TSMORPH
+    COORD --> JEDI
+    COORD --> ESLINT
     
     classDef interface fill:#e1f5fe
-    classDef manager fill:#f3e5f5
-    classDef core fill:#e8f5e8
-    classDef analyzer fill:#fff3e0
+    classDef coord fill:#f3e5f5
+    classDef library fill:#fff8e1
     
     class CLI,WEB,API interface
-    class MANAGER manager
-    class CORE core
-    class TS_ANALYZER,PY_ANALYZER,FUTURE_ANALYZER analyzer
+    class COORD coord
+    class TSMORPH,JEDI,ESLINT library
 ```
 
 #### 3.4.2 Data Flow Architecture
@@ -427,43 +374,44 @@ graph TD
 flowchart TD
     SOURCE[Source Code Files<br/>TypeScript, JavaScript, Python]
     
-    SCANNER[File Scanner<br/>Discovery & Filtering]
+    COORD[Analysis Coordinator<br/>File Discovery & Routing]
     
-    LANG_ANALYZER[Language Analyzer<br/>AST Generation]
+    TSMORPH[ts-morph Processing<br/>TypeScript/JavaScript AST]
+    JEDI[Jedi Processing<br/>Python Analysis]
+    ESLINT[ESLint Processing<br/>Linting & Quality]
     
-    SYM_EXTRACTOR[Symbol Extractor<br/>Symbol Analysis & Classification]
-    
-    REF_LINKER[Reference Linker<br/>Reference Analysis & Mapping]
-    
-    QUAL_ANALYZER[Quality Analyzer<br/>Dead Code Detection & Metrics]
-    
-    RESULTS_COMPILER[Results Compiler<br/>Analysis Result Assembly]
+    AGGREGATOR[Result Aggregation<br/>Combine Library Results]
     
     subgraph "Output Interfaces"
         CLI_OUT[CLI Output<br/>Text & JSON]
-        WEB_VIZ[Web Visualization<br/>Interactive Graphs]
-        API_RESP[API Response<br/>JSON & Export]
+        WEB_VIZ[Web Visualization<br/>D3.js Graphs]
+        API_RESP[API Response<br/>JSON Export]
     end
     
     %% Data flow sequence
-    SOURCE --> SCANNER
-    SCANNER --> LANG_ANALYZER
-    LANG_ANALYZER --> SYM_EXTRACTOR
-    SYM_EXTRACTOR --> REF_LINKER
-    REF_LINKER --> QUAL_ANALYZER
-    QUAL_ANALYZER --> RESULTS_COMPILER
+    SOURCE --> COORD
+    
+    COORD --> TSMORPH
+    COORD --> JEDI
+    COORD --> ESLINT
+    
+    TSMORPH --> AGGREGATOR
+    JEDI --> AGGREGATOR
+    ESLINT --> AGGREGATOR
     
     %% Output distribution
-    RESULTS_COMPILER --> CLI_OUT
-    RESULTS_COMPILER --> WEB_VIZ
-    RESULTS_COMPILER --> API_RESP
+    AGGREGATOR --> CLI_OUT
+    AGGREGATOR --> WEB_VIZ
+    AGGREGATOR --> API_RESP
     
     classDef source fill:#fff3e0
-    classDef process fill:#e3f2fd
+    classDef library fill:#e3f2fd
     classDef output fill:#e8f5e8
+    classDef coord fill:#f3e5f5
     
     class SOURCE source
-    class SCANNER,LANG_ANALYZER,SYM_EXTRACTOR,REF_LINKER,QUAL_ANALYZER,RESULTS_COMPILER process
+    class COORD,AGGREGATOR coord
+    class TSMORPH,JEDI,ESLINT library
     class CLI_OUT,WEB_VIZ,API_RESP output
 ```
 
@@ -476,55 +424,26 @@ The Information Viewpoint defines data models, storage architecture, and informa
 **Core Analysis Data Structures**
 
 ```typescript
-// Project Metadata
-interface ProjectMetadata {
-  path: string;
-  name: string;
-  languages: string[];
-  fileCount: number;
-  totalLOC: number;
+// Extends library interfaces with minimal Cytrac metadata
+interface CytracProjectMetadata extends Partial<ts.morph.ProjectOptions> {
   analysisTimestamp: Date;
-  version: string;
   executionTime: number;
+  cytracVersion: string;
 }
 
-// Symbol Information
-interface Symbol {
-  id: string;
-  name: string;
-  type: SymbolType; // function, class, variable, interface, type, module
-  location: SourceLocation;
-  visibility: Visibility; // public, private, protected, internal
-  confidence: number; // 0.0-1.0 for dynamic analysis uncertainty
-  metadata: SymbolMetadata;
+// Leverages library symbol types with confidence indicators
+interface CytracSymbol {
+  tsMorphSymbol?: ts.morph.Symbol;
+  jediDefinition?: jedi.Definition;
+  confidence: number;                 // 0.0-1.0 for dynamic analysis
 }
 
-// Dependency Relationships
-interface DependencyEdge {
-  from: string; // source module
-  to: string;   // target module
-  type: DependencyType; // import, require, dynamic
-  location: SourceLocation;
-  isCircular: boolean;
-}
-
-// Call Graph Data
-interface CallEdge {
-  caller: string;
-  callee: string;
-  callType: CallType; // direct, callback, async
-  location: SourceLocation;
-  confidence: number;
-}
-
-// Dead Code Findings
-interface DeadCodeItem {
-  symbol: string;
-  type: DeadCodeType; // unused_variable, unused_function, unreachable_code
-  location: SourceLocation;
-  confidence: number; // 0.0-1.0
-  safeToRemove: boolean;
-  reason: string;
+// Aggregated analysis results
+interface AnalysisResult {
+  project: CytracProjectMetadata;
+  symbols: CytracSymbol[];
+  dependencyGraph: any;              // Library-generated output
+  metrics: AnalysisMetrics;
 }
 ```
 
@@ -565,85 +484,49 @@ The Patterns Viewpoint describes architectural patterns and design strategies th
 - **Benefits**: Maintainability, testability, extensibility
 - **SRS Alignment**: Supports modular architecture requirement
 
-**2. Plugin Architecture Pattern**
+**2. Composition-Based Language Analysis Pattern**
 ```typescript
-interface LanguageAnalyzer {
-  readonly name: string;
-  readonly supportedExtensions: string[];
+// Architectural approach: Composition with library delegation
+interface AnalysisCapability {
+  canAnalyze(filePath: string): boolean;
+  analyze(filePath: string): Promise<AnalysisResult>;
+}
+
+class LanguageAnalysisCoordinator {
+  private analyzers: Map<string, AnalysisCapability>;
   
-  parseFile(filePath: string): Promise<AST>;
-  extractSymbols(ast: AST): Promise<Symbol[]>;
-  findReferences(ast: AST, symbol: Symbol): Promise<Reference[]>;
-  detectDeadCode(symbols: Symbol[], references: Reference[]): Promise<DeadCodeItem[]>;
-}
-
-// Current implementations
-class TypeScriptAnalyzer implements LanguageAnalyzer { /* ts-morph based */ }
-class PythonAnalyzer implements LanguageAnalyzer { /* Jedi based */ }
-
-// Future extensibility
-class JavaAnalyzer implements LanguageAnalyzer { /* Future addition */ }
-```
-
-**3. Security-Ready Middleware Pattern**
-```typescript
-interface RequestContext {
-  sessionId: string;       // Current analysis session
-  audit: AuditInfo;        // Request logging and tracking
-  config: UserConfig;      // Personal configuration settings
-  // Future extension points for security middleware
-  security?: SecurityContext; // Optional, for future authentication
-}
-
-interface ApiMiddleware {
-  handle(req: Request, res: Response, next: NextFunction): Promise<void>;
-}
-
-// Current: no-op authentication for local personal use
-class LocalOnlyMiddleware implements ApiMiddleware {
-  async handle(req, res, next) { 
-    // Simple session tracking for local development
-    req.context = { sessionId: generateSessionId(), audit: basicAudit() };
-    next(); 
-  }
-}
-
-// Future extension: Security middleware integration point
-class SecurityMiddleware implements ApiMiddleware {
-  async handle(req, res, next) {
-    // Future: Authentication and authorization logic
-    // Supports security-ready architecture design
+  // Composition: Contains analysis capabilities rather than inheritance
+  // - TypeScript/JavaScript: Delegates to ts-morph
+  // - Python: Delegates to Jedi
+  // - Runtime extensibility: Add analyzers without code changes
+  
+  async analyzeFile(filePath: string): Promise<AnalysisResult> {
+    // Route to appropriate analyzer based on file type
   }
 }
 ```
 
-**4. Observer Pattern for Progress Reporting**
-```typescript
-interface AnalysisObserver {
-  onProgress(stage: string, percentage: number): void;
-  onStageComplete(stage: string, result: any): void;
-  onError(error: Error): void;
-}
+**3. Standard Express Middleware Pattern**
+- **Purpose**: Leverage Express.js middleware ecosystem for request processing
+- **Architecture**: Standard middleware stack with session tracking and authentication extension points
+- **Implementation**: Express.Request extensions for security context, standard middleware patterns
 
-// Supports progress reporting requirements
-```
+**4. Observer Pattern with EventEmitter**
+- **Purpose**: Progress reporting and event-driven analysis coordination
+- **Architecture**: Node.js EventEmitter for standard event handling
+- **Implementation**: Analysis progress events, completion notifications
 
 #### 3.6.2 Design Patterns
 
-**Factory Pattern for Language Analyzers**
-- **Purpose**: Abstract analyzer creation and selection
-- **Benefits**: Easy addition of new language support
-- **Implementation**: Based on file extensions and configuration
+**Adapter Pattern for Language Libraries**
+- **Purpose**: Composition-based coordination with library delegation rather than inheritance
+- **Benefits**: Direct library access, runtime flexibility, reduced coupling
+- **Implementation**: File extension-based routing to composed library instances
 
-**Strategy Pattern for Export Formats**  
-- **Purpose**: Support multiple export formats (JSON, CSV, PDF, HTML)
-- **Benefits**: Easy addition of new export formats
-- **Architecture Alignment**: Multiple export format capability requirement
-
-**Command Pattern for CLI Operations**
-- **Purpose**: Encapsulate analysis operations as objects
-- **Benefits**: Undo/redo capability, operation queuing
-- **Architecture Alignment**: Comprehensive CLI interface requirement
+**Standard Express Patterns**  
+- **Purpose**: Use established Express.js middleware and routing patterns
+- **Benefits**: Leverages existing ecosystem, reduces custom code
+- **Implementation**: Standard middleware stack, conventional REST endpoints
 
 ### 3.7 Interface Viewpoint
 
@@ -651,78 +534,25 @@ The Interface Viewpoint specifies external interfaces, APIs, and integration pat
 
 #### 3.7.1 User Interfaces
 
-**Command Line Interface Architecture**
-```typescript
-interface CLIInterface {
-  // Core Commands
-  analyze(projectPath: string, options: AnalysisOptions): Promise<AnalysisResult>;
-  export(analysisId: string, format: ExportFormat, outputPath?: string): Promise<void>;
-  configure(key: string, value: any): Promise<void>;
-  version(): string;
-  
-  // Command Options
-  supportedFormats: ['json', 'text', 'report'];
-  supportedLanguages: ['typescript', 'javascript', 'python'];
-  configurationOptions: ConfigurationSchema;
-}
-```
+**User Interface Architecture**
 
-**Web Interface Architecture**
-```typescript
-interface WebInterface {
-  // Page Components
-  dashboard: DashboardComponent;
-  analysisInitiation: AnalysisComponent;
-  resultsVisualization: ResultsComponent;
-  exportManagement: ExportComponent;
-  
-  // API Integration
-  apiClient: WebAPIClient;
-  
-  // Route Structure
-  routes: {
-    '/': 'dashboard',
-    '/analyze': 'analysis-initiation',
-    '/results/:id': 'results-visualization',
-    '/export/:id/:format': 'export-management'
-  };
-}
-```
+- **Command Line Interface**: Commander.js-based CLI with standard command patterns
+- **Web Interface**: React SPA with component-based architecture and D3.js visualizations
+- **REST API**: Express.js application with standard middleware patterns
 
-**REST API Architecture**
-```typescript
-interface RESTAPIInterface {
-  // Analysis Operations
-  createAnalysis(request: AnalysisRequest): Promise<AnalysisResponse>;
-  getAnalysisStatus(id: string): Promise<AnalysisStatus>;
-  getAnalysisResults(id: string): Promise<AnalysisResult>;
-  
-  // Export Operations  
-  exportAnalysis(id: string, format: ExportFormat): Promise<ExportData>;
-  
-  // System Operations
-  getHealthStatus(): Promise<HealthStatus>;
-  updateConfiguration(config: ConfigurationUpdate): Promise<ConfigurationResponse>;
-  
-  // API Specification
-  version: 'v1';
-  baseUrl: '/api/v1';
-  authentication: OptionalMiddleware;
-}
+**API Endpoint Structure**
+```
+POST /api/v1/analysis       # Initiate analysis
+GET  /api/v1/analysis/:id   # Retrieve results
+GET  /api/v1/health         # System health check
 ```
 
 #### 3.7.2 Integration Interfaces
 
 **IDE Integration Architecture**
-```typescript
-interface IDEIntegration {
-  // Language Server Protocol compatibility
-  initialize(params: InitializeParams): Promise<InitializeResult>;
-  textDocument_didOpen(params: DidOpenTextDocumentParams): void;
-  textDocument_didChange(params: DidChangeTextDocumentParams): void;
-  textDocument_analysis(params: AnalysisParams): Promise<AnalysisResult>;
-}
-```
+- **Approach**: Language Server Protocol (LSP) implementation for IDE integration
+- **Libraries**: Standard vscode-languageserver for VS Code extension development
+- **Capabilities**: Real-time analysis feedback, navigation support, incremental updates
 
 **CI/CD Integration Architecture**
 ```yaml
@@ -806,6 +636,8 @@ Accessible via:
 
 ## 4. Design Rationale
 
+This section documents the key architectural decisions, their rationale, and the trade-offs considered during the design process.
+
 ### 4.1 Architectural Decisions
 
 #### 4.1.1 Monorepo with Modular Packages
@@ -834,13 +666,14 @@ Accessible via:
 - Enables incremental security feature addition when collaboration needs arise
 - Maintains architectural extensibility for optional future security features
 
-#### 4.1.4 Plugin-Based Language Support
-**Decision**: Abstract language analyzers behind unified interface with extension points
+#### 4.1.4 Composition-Based Language Support
+**Decision**: Use composition with library delegation rather than inheritance-based plugin architecture
 **Rationale**:
 - Supports extensibility requirements for future language additions
-- Enables future language additions without core architecture changes
-- Facilitates independent testing and maintenance of language-specific analysis logic
-- Aligns with open/closed principle supporting personal project evolution
+- Enables runtime addition of new language analyzers without inheritance constraints
+- Maintains loose coupling with direct library delegation for better performance
+- Follows "composition over inheritance" principle for better flexibility
+- Aligns with library-centric architecture approach throughout the system
 
 ### 4.2 Technology Selection Rationale
 
@@ -858,49 +691,52 @@ Accessible via:
 
 #### 4.2.2 Design Pattern Selection
 - **Layered Architecture**: Clean separation supporting high test coverage requirements
-- **Plugin Pattern**: Future language extensibility support
-- **Observer Pattern**: Progress reporting for long analyses
-- **Strategy Pattern**: Multiple export formats capability
+- **Composition Pattern**: Library coordination through delegation rather than inheritance
+- **Observer Pattern**: Standard Node.js EventEmitter for progress reporting
+- **Middleware Pattern**: Standard Express middleware for request processing
 
-### 4.3 Performance Design Decisions
+### 4.3 Interface Design Rationale
 
-#### 4.3.1 Memory Management Strategy
-**Decision**: Streaming AST processing with configurable memory limits and progressive analysis
-**Technical Implementation**:
-- **Memory Target**: <2GB total consumption for projects up to 100k lines of code
-- **Streaming Processing**: Process files in 1000-file batches to maintain memory efficiency
-- **AST Caching**: LRU cache for 500 most recently analyzed files with automatic eviction
-- **Garbage Collection**: Explicit memory management with V8 heap monitoring
+#### 4.3.1 Minimal Abstraction Strategy
+**Decision**: Use thin wrappers around existing library APIs rather than heavy abstraction layers
 **Rationale**:
-- Supports updated memory targets for personal project scale (100k LOC maximum)
-- Enables graceful degradation on resource-constrained development machines
-- Optimized for single-user desktop workflow patterns vs. concurrent server processing
+- **ts-morph** already provides comprehensive TypeScript AST analysis with 208k+ weekly downloads and mature API
+- **ESLint** offers extensive JavaScript analysis capabilities with established patterns
+- **Python Jedi** delivers proven Python analysis functionality
+- **Express.js** provides standard middleware patterns for HTTP request handling
+- **React** ecosystem includes established patterns for SPA development
 
-#### 4.3.2 Analysis Performance Strategy  
-**Decision**: Multi-stage progressive analysis with early result feedback and incremental processing
-**Technical Implementation**:
-- **Stage 1**: File discovery and basic parsing (target: 5-10 seconds for 100k LOC)
-- **Stage 2**: Symbol extraction and basic analysis (target: 30-60 seconds for 100k LOC)  
-- **Stage 3**: Reference analysis and quality checks (target: 2-5 minutes total for 100k LOC)
-- **Incremental Updates**: File-level change detection with selective re-analysis
-- **Progress Reporting**: Real-time progress indicators every 100ms during analysis
-**Rationale**:
-- Achieves performance targets: 30s for <25k LOC, 5min for large personal projects
-- Provides immediate feedback for developer workflow integration
-- Supports iterative development patterns common in personal projects
+**Benefits**:
+- Reduced development complexity and maintenance overhead
+- Direct access to full library capabilities without abstraction limitations
+- Easier debugging and troubleshooting with direct library integration
+- Lower learning curve for developers familiar with these established tools
+- Better performance by avoiding unnecessary abstraction layers
 
-#### 4.3.3 Local Caching Strategy  
-**Decision**: Project-level analysis result caching with file-system based persistence and incremental updates
-**Technical Implementation**:
-- **Cache Location**: `~/.cytrac/cache/<project-hash>/` with JSON-based storage
-- **Cache Strategy**: Separate caches for symbols, dependencies, references, and quality metrics
-- **Invalidation**: File modification time + content hash based cache invalidation
-- **Size Management**: Automatic cleanup of caches older than 30 days, 1GB total cache limit
-- **Performance Impact**: 90%+ cache hit rate for unchanged files, <1s cache retrieval
+#### 4.3.2 Standard Pattern Usage
+**Decision**: Leverage existing framework patterns (Express middleware, React components, Node.js EventEmitter)
 **Rationale**:
-- Enables sub-second re-analysis for unchanged code sections during development cycles
-- Supports offline development workflow essential for personal development
-- Balances cache effectiveness with disk space constraints on personal development machines
+- Existing patterns are well-documented, tested, and understood by developers
+- Framework ecosystems provide extensive tooling and community support
+- Standard patterns reduce architectural complexity and improve maintainability
+- Integration with existing developer workflows and tools is simplified
+
+### 4.4 Performance Design Decisions
+
+#### 4.4.1 Memory Management Strategy
+**Decision**: Streaming AST processing with configurable memory limits
+**Rationale**: Supports memory targets for personal project scale with graceful degradation
+**Implementation**: Delegates memory management to ts-morph and ESLint library optimizations
+
+#### 4.4.2 Analysis Performance Strategy  
+**Decision**: Progressive analysis with early result feedback
+**Rationale**: Achieves performance targets while providing immediate developer feedback
+**Implementation**: File discovery → Symbol extraction → Reference analysis (leverages library optimizations)
+
+#### 4.4.3 Local Caching Strategy  
+**Decision**: Project-level caching with file-system persistence
+**Rationale**: Enables fast re-analysis for unchanged code during development
+**Implementation**: JSON-based cache in `.cytrac/cache/` with file modification tracking
 
 ## 5. Conclusion
 
@@ -908,7 +744,7 @@ Accessible via:
 This architecture provides a solid foundation for Cytrac as a professional personal development tool, implementing all system requirements with security-ready design for optional future collaboration capabilities. The modular, local-first architecture optimizes current solopreneur workflows while maintaining extensibility for evolving personal project needs.
 
 ### 5.2 Implementation Priorities
-1. **Core Analysis Engine**: Foundation implementing multi-language analysis capabilities
+1. **Library Integration Foundation**: Foundation implementing multi-language analysis capabilities
 2. **CLI Interface**: Primary interface for solopreneur developer workflows
 3. **Web Interface**: Interactive visualization and comprehensive reporting
 4. **API Layer**: Integration capabilities and workflow automation support
@@ -917,7 +753,7 @@ This architecture provides a solid foundation for Cytrac as a professional perso
 ### 5.3 Future Evolution Path
 The architecture supports natural evolution paths for personal project growth:
 - **Collaboration Support**: Optional authentication and session management for pair programming
-- **Advanced Analysis**: Additional language analyzer plugins (Java, C#, Go, Rust)
+- **Advanced Analysis**: Additional language library integrations (Java, C#, Go, Rust)
 - **Enhanced Visualization**: Advanced graph algorithms and reporting capabilities
 - **Integration Expansion**: Additional IDE plugins and CI/CD platform support
 - **Cloud Deployment**: Simple cloud hosting for team collaboration when needed
