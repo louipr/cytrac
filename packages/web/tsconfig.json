@@ -1,0 +1,32 @@
+{
+  "extends": "../../tsconfig.base.json", 
+  "compilerOptions": {
+    // Override base config for React/Vite
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    
+    // Vite-specific options
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    
+    // React JSX
+    "jsx": "react-jsx",
+    
+    // Override base emit options for frontend
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": true,
+    "composite": false,
+    "incremental": false,
+    
+    // Directories  
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": [
+    "src/**/*"
+  ]
+}
