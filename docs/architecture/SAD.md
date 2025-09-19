@@ -1,12 +1,12 @@
 ---
 title: "Cytrac Software Architecture Document (SAD)"
-version: 2.1
-date: "September 18, 2025"
+version: 2.2
+date: "September 19, 2025"
 authors: "CyrusTek Senior Software Architect"
 reviewed_by: "Architecture Review Board"
 status: "Professional Architecture Specification"
 compliance: "IEEE Std 1016-2009 (Software Design Descriptions)"
-source_document: "Cytrac Software Requirements Specification (SRS) v3.0"
+source_document: "Cytrac Software Requirements Specification (SRS) v3.0, Cytrac SPMP v1.1"
 repository: "https://github.com/louipr/cytrac"
 ---
 
@@ -73,6 +73,24 @@ The architecture prioritizes solopreneur development workflows with the followin
 - **Maintainability**: High test coverage with modular, well-documented architecture
 - **Usability**: Minimal learning curve for experienced developers with comprehensive tooling
 - **Privacy**: Local-first analysis protecting proprietary source code by design
+- **Testability**: Comprehensive validation framework supporting analysis accuracy verification
+- **Accuracy**: 95%+ agreement with established tools through synthetic project testing
+
+#### 2.1.3 Testing and Validation Architecture Requirements
+The architecture must support comprehensive testing and validation patterns aligned with SPMP Phase 4 requirements:
+
+**Foundation Testing Architecture**:
+- **Unit Testing**: Jest-based architecture supporting 80%+ code coverage across monorepo packages
+- **Integration Testing**: API contract testing with supertest for Express.js endpoints
+- **E2E Testing**: Playwright integration for critical user workflow validation
+- **Performance Testing**: Benchmarking architecture for sub-minute analysis targets
+
+**Analysis Validation Architecture**:
+- **Synthetic Project Framework**: Modular test project architecture supporting 6-8 high-quality representative codebases (2 per supported language)
+- **Dogfooding Validation**: Self-analysis capability (Cytrac analyzing its own codebase)
+- **Comparative Analysis**: Validation architecture against ESLint, TypeScript compiler, and Jedi
+- **Confidence Scoring**: Architectural support for 0.0-1.0 confidence metrics on all findings
+- **Edge Case Handling**: Robust error handling architecture for malformed/complex code structures
 
 ### 2.2 Architectural Constraints
 
@@ -738,18 +756,92 @@ SSL Certificates:
 
 This section documents the key architectural decisions, their rationale, and the trade-offs considered during the design process.
 
-### 4.1 Architectural Decisions
+### 4.1 Implementation Phase Architecture
 
-#### 4.1.1 Monorepo with Modular Packages
-**Decision**: Use monorepo structure with separate packages for core, CLI, web, and API components
+The architecture supports phased implementation aligned with SPMP work package structure, ensuring architectural integrity throughout development:
+
+#### 4.1.1 Phase-Based Architecture Evolution
+```mermaid
+graph TB
+    subgraph "Phase 1: Foundation (WP1-WP2)"
+        MONO[Monorepo Structure<br/>TypeScript Build System]
+        CORE[Core Analysis Engine<br/>ts-morph + ESLint + Jedi]
+        CLI[Basic CLI Interface<br/>Commander.js]
+    end
+    
+    subgraph "Phase 2: Integration (WP3-WP4)" 
+        API[REST API Layer<br/>Express.js + OpenAPI]
+        AUTH[Security-Ready Middleware<br/>Authentication Framework]
+        VM[Oracle ARM VM Deployment<br/>Backend Infrastructure]
+    end
+    
+    subgraph "Phase 3: Visualization (WP5)"
+        SPA[React SPA<br/>Component Architecture]
+        D3VIZ[D3.js Visualization<br/>Interactive Charts]
+        AWS[AWS S3 + CloudFront<br/>Frontend Deployment]
+    end
+    
+    subgraph "Phase 4: Testing & Validation"
+        SYNTH[Synthetic Project Framework<br/>6-8 Representative Codebases]
+        VALID[Analysis Validation<br/>95% Accuracy Target]
+        DOG[Dogfooding Architecture<br/>Self-Analysis]
+    end
+    
+    MONO --> CORE
+    CORE --> CLI
+    CLI --> API
+    API --> AUTH
+    AUTH --> VM
+    VM --> SPA
+    SPA --> D3VIZ
+    D3VIZ --> AWS
+    AWS --> SYNTH
+    SYNTH --> VALID
+    VALID --> DOG
+```
+
+#### 4.1.2 Critical Architecture Dependencies
+- **WP1 → WP2**: Monorepo foundation enables modular analysis engine development
+- **WP2 → WP4**: Core analysis capabilities required before API endpoint implementation  
+- **WP4 → WP5**: REST API operational before React SPA integration
+- **WP5 → Validation**: Frontend complete before comprehensive analysis validation testing
+
+#### 4.1.3 Architecture Risk Mitigation
+- **Core Engine Delays**: Composition-based architecture allows independent language library integration
+- **Oracle VM Issues**: Containerized deployment supports Railway/Google Cloud Run migration
+- **Testing Framework Delays**: Modular validation architecture enables incremental synthetic project addition
+
+### 4.2 Architectural Decisions
+
+#### 4.2.1 Monorepo with Modular Packages
+**Decision**: Use monorepo structure with separate packages aligned with SPMP work package breakdown
 **Rationale**: 
-- Supports modular architecture requirements for maintainable personal development
-- Enables selective deployment patterns (CLI-only for automation, web interface for visualization)
-- Facilitates independent testing and development of analysis vs. visualization components
-- Maintains clear separation of concerns supporting high test coverage requirements
-- Enables future extensibility when personal projects grow into collaboration scenarios
+- **Work Package Alignment**: Packages directly map to SPMP implementation phases (WP1-WP6)
+  - `@cytrac/core` → WP2 (Core Analysis Engine, 160 hours)
+  - `@cytrac/cli` → WP3 (CLI Interface, 80 hours, parallel development)
+  - `@cytrac/api` → WP4 (REST API, 240 hours including validation framework)
+  - `@cytrac/web` → WP5 (Web Interface, 180 hours with D3.js visualization)
+- **Resource Allocation**: Independent package development supports optimal resource utilization (740 developer hours + 120 DevOps hours)
+- **Testing Strategy**: Modular architecture enables phase-based testing (foundation testing → analysis validation)
+- **Critical Path Support**: Package dependencies mirror SPMP critical path (Foundation → Core → API → Web → Infrastructure)
+- **Parallel Development**: CLI package enables parallel development with core engine (WP2/WP3 overlap)
 
-#### 4.1.2 Hybrid Cloud Architecture Strategy
+**Package Architecture**:
+```
+cytrac/
+├── packages/
+│   ├── core/          # WP2: Analysis engine (ts-morph, ESLint, Jedi)
+│   ├── cli/           # WP3: Commander.js interface (parallel with WP2)
+│   ├── api/           # WP4: Express.js + validation framework
+│   ├── web/           # WP5: React SPA + D3.js visualization
+├── tests/
+│   ├── synthetic/     # Phase 4: 20+ representative test projects
+│   ├── validation/    # Phase 4: Analysis accuracy validation
+│   └── e2e/          # Phase 4: End-to-end workflow testing
+└── infrastructure/    # WP6: Deployment automation (120 DevOps hours)
+```
+
+#### 4.2.2 Hybrid Cloud Architecture Strategy
 **Decision**: Local-first development with hybrid cloud deployment using AWS S3 for frontend and distributed multi-cloud backend hosting
 **Rationale**:
 - **Cost Optimization**: AWS S3 + CloudFront provides enterprise CDN at ~$0.01/month for frontend hosting
@@ -843,16 +935,26 @@ This section documents the key architectural decisions, their rationale, and the
 ## 5. Conclusion
 
 ### 5.1 Architecture Summary
-This hybrid cloud architecture provides a professional, cost-effective foundation for Cytrac and future applications, implementing all system requirements with enterprise-grade deployment capabilities at near-zero operational costs. The local-first development approach combined with strategic cloud deployment optimizes both development productivity and production scalability.
+This hybrid cloud architecture provides a professional, cost-effective foundation for Cytrac, implementing all SRS requirements and SPMP implementation strategy with enterprise-grade deployment capabilities at near-zero operational costs. The architecture supports phased development with comprehensive testing and validation frameworks, ensuring both technical excellence and project success.
 
-### 5.2 Implementation Priorities
-1. **AWS Frontend Infrastructure**: S3 + CloudFront setup for unified SPA hosting (app.cyrustek.com)
-2. **Oracle ARM VM Backend**: Primary API hosting with ts-morph + ESLint + Jedi analysis engine
-3. **Library Integration Foundation**: Multi-language analysis capabilities with composition-based architecture
-4. **CLI Interface**: Local development tool maintaining privacy-by-design principles
-5. **Hybrid Deployment Pipeline**: Automated deployment for both AWS frontend and Oracle backend components
+### 5.2 SPMP Implementation Alignment
+The architecture directly supports SPMP work package execution:
+- **WP1-WP2**: Monorepo foundation and core analysis engine architecture (240 hours)
+- **WP3**: CLI interface architecture enabling parallel development (80 hours) 
+- **WP4**: REST API and validation testing framework architecture (240 hours)
+- **WP5**: React SPA and enhanced validation architecture (180 hours)
+- **WP6**: Hybrid cloud deployment architecture (120 DevOps hours)
 
-### 5.3 Future Evolution Path
+**Total Architecture Support**: 860 hours across 22-week implementation timeline with comprehensive quality assurance.
+
+### 5.3 Testing and Validation Architecture
+The architecture provides comprehensive validation capabilities:
+- **Foundation Testing**: 80%+ code coverage with Jest, Playwright E2E testing
+- **Analysis Validation**: 95%+ accuracy through synthetic project testing (minimum 20 codebases)
+- **Quality Assurance**: Dogfooding validation, comparative analysis, confidence scoring architecture
+- **Performance Validation**: Sub-minute analysis targets with streaming processing architecture
+
+### 5.4 Future Evolution Path
 The hybrid cloud architecture supports seamless scaling and evolution:
 
 **Near-term Expansion (0-12 months):**

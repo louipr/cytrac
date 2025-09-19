@@ -1,10 +1,10 @@
 ---
 title: "Cytrac Software Project Management Plan (SPMP)"
-version: 1.0
+version: 1.1
 date: "September 19, 2025"
 authors: "CyrusTek Senior Software Architect"
 compliance: "IEEE Std 1058-1998 (Software Project Management Plans)"
-source_documents: "SRS v3.0, SAD v2.1, ADR-001"
+source_documents: "SRS v3.0, SAD v2.2, ADR-001"
 project_code: "CYTRAC-2025-001"
 ---
 
@@ -17,8 +17,8 @@ project_code: "CYTRAC-2025-001"
 | **Document Type** | Software Project Management Plan (SPMP) |
 | **IEEE Standard** | IEEE Std 1058-1998 |
 | **Project** | Cytrac - Code Analysis & Visualization Platform |
-| **Version** | 1.0 |
-| **Status** | Draft - Ready for Review |
+| **Version** | 1.1 |
+| **Status** | Enhanced - Ready for Implementation |
 | **Classification** | Internal Development |
 
 ---
@@ -136,6 +136,23 @@ project_code: "CYTRAC-2025-001"
 - **Library Maintainers**: ts-morph, ESLint, Jedi version compatibility tracking
 - **Cloud Providers**: AWS, Oracle Cloud service level agreements and limitations
 
+### 2.3 Stakeholder Communication Plan
+
+#### 2.3.1 Communication Matrix
+| Stakeholder | Communication Type | Frequency | Method | Owner |
+|-------------|-------------------|-----------|---------|-------|
+| **Software Architect** | Progress updates, technical decisions | Daily | Direct communication | All team members |
+| **Backend Developer** | Implementation status, blockers | Bi-weekly | Status meetings | Software Architect |
+| **Frontend Developer** | UI/UX decisions, API integration | Bi-weekly | Status meetings | Software Architect |
+| **DevOps Engineer** | Infrastructure status, deployment | Weekly | Status updates | Software Architect |
+| **End Users (Beta)** | Feature validation, feedback | Phase milestones | User surveys, interviews | Frontend Developer |
+
+#### 2.3.2 Communication Deliverables
+- **Weekly Status Reports**: Progress against milestones, risk updates, resource utilization
+- **Milestone Reviews**: Formal completion criteria validation and next phase planning
+- **Technical Decision Records**: Architecture decisions documented per ADR format
+- **Risk Escalation Procedures**: Critical issue communication within 24 hours
+
 ---
 
 ## 3. Managerial Process
@@ -219,7 +236,7 @@ project_code: "CYTRAC-2025-001"
 - **Phase 1 - Foundation**: Weeks 1-6 (Monorepo + Core Engine)
 - **Phase 2 - Integration**: Weeks 7-14 (Multi-language + API)
 - **Phase 3 - Visualization**: Weeks 15-18 (Frontend + D3.js)
-- **Phase 4 - Deployment**: Weeks 19-22 (Infrastructure + Production)
+- **Phase 4 - Deployment**: Weeks 17-22 (Infrastructure setup begins week 17, parallel with web development)
 
 #### 3.2.2 Critical Path Dependencies
 1. **Monorepo Foundation → Core Engine**: Package structure required for development
@@ -249,6 +266,25 @@ project_code: "CYTRAC-2025-001"
 | **Domain** | Domain Registrar | $1.25 | Annual cyrustek.com renewal |
 | **SSL Certificates** | AWS + Let's Encrypt | $0.00 | Free automated certificates |
 | **Total** | | **<$2/month** | Well under $5 target |
+
+#### 3.3.3 Total Resource Requirements Summary
+| Work Package | Developer Hours | Specialized Role | Total Hours | Duration |
+|--------------|-----------------|-------------------|-------------|----------|
+| WP1: Monorepo Foundation | 80 | Developer | 80 | 2 weeks |
+| WP2: Core Analysis Engine | 160 | Developer | 160 | 4 weeks |
+| WP3: CLI Interface | 80 | Developer | 80 | 4 weeks (parallel) |
+| WP4: REST API | 240 | Developer | 240 | 6 weeks |
+| WP5: Web Interface | 180 | Developer | 180 | 4 weeks |
+| WP6: Infrastructure | 120 | DevOps Engineer | 120 | 4 weeks |
+| **Total Project** | **740** | **Mixed** | **860** | **22 weeks** |
+
+*Note: WP3 (CLI) runs parallel with WP2/WP4, reducing actual development time to ~780 hours over 22 weeks*
+
+**Resource Allocation Strategy**:
+- **Development Resources**: Primary focus on developer time (86% of total hours)
+- **Specialization**: DevOps engineer required for final infrastructure deployment
+- **Parallel Work**: CLI development overlaps with core engine and API development
+- **Peak Resource Period**: Weeks 9-14 (REST API development with 240 hours allocated)
 
 ---
 
@@ -467,7 +503,7 @@ Based on SAD architectural viewpoints and ADR-001 decisions:
 4. Create interactive dependency graph system
 5. Implement AWS S3 deployment pipeline
 6. Add comprehensive E2E testing
-7. Expand synthetic project library for comprehensive validation
+7. Complete synthetic project library (6-8 high-quality representative codebases)
 8. Perform comparative analysis against established tools
 9. Refine analysis validation methodology
 
@@ -627,6 +663,15 @@ interface SecurityContext {
 - **Resource Utilization**: Efficient use of development time and skills
 - **Stakeholder Satisfaction**: Architecture and implementation meet requirements
 
+#### 7.2.4 Analysis Validation Success Criteria
+- **Accuracy Validation**: 95%+ agreement with established tools on known codebases
+- **Synthetic Project Coverage**: 6-8 high-quality representative test projects (2 per supported language)
+- **Dogfooding Success**: Cytrac codebase analysis completes without errors and produces meaningful insights
+- **Edge Case Handling**: Graceful handling of 100% malformed/complex code samples with appropriate error reporting
+- **Performance Validation**: Analysis validation tests complete within performance targets (sub-minute typical)
+- **Confidence Scoring**: Analysis results include meaningful confidence metrics (0.0-1.0 scale) for all findings
+- **Comparative Analysis**: Results validated against ESLint, TypeScript compiler, and Jedi for consistency verification
+
 ### 7.3 Post-Deployment Success Metrics
 
 #### 7.3.1 System Performance Monitoring
@@ -646,7 +691,7 @@ interface SecurityContext {
 
 ### Appendix A: References
 - **Cytrac Software Requirements Specification (SRS) v3.0**: Functional and non-functional requirements
-- **Cytrac Software Architecture Document (SAD) v2.1**: IEEE 1016-2009 compliant architecture
+- **Cytrac Software Architecture Document (SAD) v2.2**: IEEE 1016-2009 compliant architecture
 - **ADR-001**: Inter-Service Communication Patterns for Oracle ARM VM
 - **IEEE Std 1058-1998**: Standard for Software Project Management Plans
 - **IEEE Std 1016-2009**: Standard for Software Design Descriptions
@@ -659,15 +704,47 @@ interface SecurityContext {
 - **ts-morph**: TypeScript compiler wrapper library for AST manipulation
 
 ### Appendix C: Change Control
+
+#### C.1 Change Control Process
 All changes to this SPMP require:
-1. Impact assessment on schedule, budget, and technical approach
-2. Updated risk analysis and mitigation strategies  
-3. Approval from Software Architect
-4. Version control with change log documentation
+1. **Impact Assessment**: Analysis of schedule, budget, and technical approach implications
+2. **Risk Analysis Update**: Updated risk analysis and mitigation strategies for affected areas
+3. **Stakeholder Review**: Approval from Software Architect and affected work package owners
+4. **Documentation Update**: Version control with detailed change log documentation
+5. **Communication Plan**: Notification to all project stakeholders within 48 hours
+
+#### C.2 Change Classification
+- **Minor Changes**: Clarifications, formatting, non-impacting updates (< 5% resource impact)
+- **Major Changes**: Scope modifications, schedule adjustments, resource reallocations (≥ 5% impact)
+- **Critical Changes**: Architecture modifications, technology stack changes, budget overruns
+
+#### C.3 Change Log Template
+```
+Change ID: CYTRAC-SPMP-YYYY-NNN
+Date: YYYY-MM-DD
+Classification: [Minor|Major|Critical]
+Initiated By: [Role]
+Description: [Brief change summary]
+Justification: [Business/technical rationale]
+Impact Analysis:
+- Schedule Impact: [±X weeks]
+- Budget Impact: [±$X or ±Y hours]
+- Risk Impact: [New risks introduced/mitigated]
+Approval: [Software Architect signature/date]
+Communication: [Stakeholder notification completed Y/N]
+```
+
+#### C.4 Stakeholder Communication Matrix
+| Change Type | Notification Required | Timeline |
+|-------------|----------------------|----------|
+| Minor | Software Architect | Same day |
+| Major | All work package owners | 48 hours |
+| Critical | All stakeholders + management | 24 hours |
 
 ---
 
-**Document Version**: 1.0  
+**Document Version**: 1.1  
 **Last Updated**: September 19, 2025  
 **Next Review**: Implementation Week 6 (Milestone M2)  
-**Approval Status**: Draft - Ready for Review
+**Approval Status**: Enhanced - Ready for Implementation  
+**Changes in v1.1**: Added resource summary, validation criteria, enhanced change control, stakeholder communication plan

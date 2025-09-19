@@ -2,7 +2,7 @@
 # Cytrac Software Requirements Specification (SRS)
 
 **Version:** 3.0  
-**Date:** September 18, 2025  
+**Date:** September 19, 2025  
 **Authors:** CyrusTek Engineering Team  
 **Reviewed By:** Senior Software Architect  
 **Status:** Streamlined for Solopreneur Use  
@@ -45,7 +45,7 @@ The system excludes requirements traceability management and focuses exclusively
 - **IDE**: Integrated Development Environment - Software development application
 - **LSP**: Language Server Protocol - Standardized protocol for language analysis services
 - **REST API**: Representational State Transfer Application Programming Interface
-- **SDD**: Software Design Description - Detailed system design documentation
+- **SAD**: Software Architecture Document - Detailed system design documentation
 - **SRS**: Software Requirements Specification - This document
 
 ### 1.5 References
@@ -922,7 +922,7 @@ The system SHALL produce analysis results containing:
 - **Filterable Reports**: Dead code findings, quality metrics, trend analysis
 - **Export Capabilities**: Results export in multiple formats with custom filtering
 
-*Note: Detailed data schemas and API specifications will be defined in the Software Design Description (SDD).*
+*Note: Detailed data schemas and API specifications will be defined in the Software Architecture Document (SAD).*
 
 #### 4.6.3 References and Standards
 - IEEE Std 830-1998: IEEE Recommended Practice for Software Requirements Specifications  
