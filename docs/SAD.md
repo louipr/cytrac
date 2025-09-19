@@ -1,18 +1,16 @@
 ---
-# Cytrac Software Architecture Document (SAD)
-
-**Version:** 2.1  
-**Date:** September 18, 2025  
-**Authors:** CyrusTek Senior Software Architect  
-**Reviewed By:** Architecture Review Board  
-**Status:** Professional Architecture Specification  
-**Compliance:** IEEE Std 1016-2009 (Software Design Descriptions)  
-**Source Document:** Cytrac Software Requirements Specification (SRS) v3.0  
-**GitHub Repository:** https://github.com/louipr/cytrac
-
+title: "Cytrac Software Architecture Document (SAD)"
+version: 2.1
+date: "September 18, 2025"
+authors: "CyrusTek Senior Software Architect"
+reviewed_by: "Architecture Review Board"
+status: "Professional Architecture Specification"
+compliance: "IEEE Std 1016-2009 (Software Design Descriptions)"
+source_document: "Cytrac Software Requirements Specification (SRS) v3.0"
+repository: "https://github.com/louipr/cytrac"
 ---
 
-# Software Architecture Document (SAD)
+# Cytrac Software Architecture Document (SAD)
 
 ## 1. Introduction
 
